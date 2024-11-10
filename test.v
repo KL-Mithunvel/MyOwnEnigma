@@ -348,7 +348,6 @@
 
 //test-3 for encription 
 
-
 module counter_with_input_check (
     input wire CLK100MHZ,   // 100 MHz clock input
     input wire ck_io5,      // Digital input
@@ -360,9 +359,9 @@ module counter_with_input_check (
     output wire ck_io1,     // Output pin for count[1]
     output wire ck_io2,     // Output pin for count[2]
     output wire ck_io3,     // Output pin for count[3]
-    output reg o_lb0, o_lb1, o_lb2, o_lb3, o_lb4,o_lb4N // 5-bit output for patterns
-//    output reg [3:0] led, 
-//    output reg led0_r, led0_g, led0_b, led1_r , led1_g, led1_b
+    output reg o_lb0, o_lb1, o_lb2, o_lb3, o_lb4,o_lb4N, // 5-bit output for patterns
+//    output reg [3:0] led,
+    output reg led0_r, led0_g, led0_b, led1_r , led1_g, led1_b
 );
 
     localparam integer DIVISOR = 100_000_0; // 100 MHz to 1 Hz
@@ -379,7 +378,7 @@ module counter_with_input_check (
     reg output_O, output_P, output_Q, output_R, output_S, output_T, output_U;
     reg output_V, output_W, output_X, output_Y, output_Z;
     reg [2:0] rotor_left, rotor_mid ,rotor_right;
-    
+   
     reg pass1 [25:0];
     reg pass2 [25:0];
     reg pass3 [25:0];
@@ -387,16 +386,16 @@ module counter_with_input_check (
     reg pass5 [25:0];
     reg pass6 [25:0];
     reg pass7 [25:0];
-    
+   
     initial begin
         rotor_left=1;
         rotor_mid=2;
         rotor_right=3;
     end
-//    always @(posedge CLK100MHZ) begin 
+//    always @(posedge CLK100MHZ) begin
 ////        led = {rotor_left, rotor_mid};
 ////        {led0_r, led0_g, led0_b} = {rotor_right, 1'b0};    //red+green=pink
-        
+       
 //    end
     // Clock Divider and Counter
     always @(posedge CLK100MHZ) begin
@@ -431,7 +430,7 @@ module counter_with_input_check (
         if (ck_io5 || ck_io6 || ck_io7 || ck_io8) begin
         //ck_io0 ck_io1   ck_io2  ck_io3    
             case ({ck_io3, ck_io2, ck_io1, ck_io0, ck_io5, ck_io6, ck_io7, ck_io8})
-                8'b00010100: input_A <= 1; 
+                8'b00010100: input_A <= 1;
                 8'b01010010: input_B <= 1;
                 8'b00110010: input_C <= 1;
                 8'b00110100: input_D <= 1;
@@ -450,7 +449,7 @@ module counter_with_input_check (
                 8'b00001000: input_Q <= 1;
                 8'b00111000: input_R <= 1;
                 8'b00100100: input_S <= 1;
-                8'b01001000: input_T <= 1; 
+                8'b01001000: input_T <= 1;
                 8'b01101000: input_U <= 1;
                 8'b01000010: input_V <= 1;
                 8'b00011000: input_W <= 1;
@@ -477,12 +476,13 @@ end
     always @(posedge CLK100MHZ) begin
         if (sw[0]) begin
         //aaa
+        
         pass1[`B] <= input_A; pass1[`D] <= input_B; pass1[`F] <= input_C; pass1[`H] <= input_D; pass1[`J] <= input_E;
         pass1[`L] <= input_F; pass1[`C] <= input_G; pass1[`P] <= input_H; pass1[`R] <= input_I; pass1[`T] <= input_J;
         pass1[`X] <= input_K; pass1[`V] <= input_L; pass1[`Z] <= input_M; pass1[`N] <= input_N; pass1[`Y]<= input_O;
         pass1[`E] <= input_P; pass1[`I] <= input_Q; pass1[`W] <= input_R; pass1[`G] <= input_S; pass1[`A] <= input_T;
-        pass1[`U] <= input_U; pass1[`V] <= input_V; pass1[`U] <= input_W; pass1[`S] <= input_X; pass1[`Q] <= input_Y; pass1[`O] <= input_Z;
-        
+        pass1[`K] <= input_U; pass1[`M] <= input_V; pass1[`U] <= input_W; pass1[`S] <= input_X; pass1[`Q] <= input_Y; pass1[`O] <= input_Z;
+       
         // PASS 2 - ROTOR MID - ONLY ROTOR 2 IMPLEMENTE
         pass2[`A] <= pass1[`A]; pass2[`J] <= pass1[`B]; pass2[`D] <= pass1[`C]; pass2[`K] <= pass1[`D]; pass2[`S] <= pass1[`E];
         pass2[`I] <= pass1[`F]; pass2[`R] <= pass1[`G]; pass2[`U] <= pass1[`H]; pass2[`X] <= pass1[`I]; pass2[`B] <= pass1[`J];
@@ -490,27 +490,27 @@ end
         pass2[`C] <= pass1[`P]; pass2[`Q] <= pass1[`Q]; pass2[`G] <= pass1[`R]; pass2[`Z] <= pass1[`S]; pass2[`N] <= pass1[`T];
         pass2[`P] <= pass1[`U]; pass2[`Y] <= pass1[`V]; pass2[`F] <= pass1[`W]; pass2[`V] <= pass1[`X]; pass2[`O] <= pass1[`Y]; pass2[`E] <= pass1[`Z];
 
-        
+       
         // PASS 3 - ROTOR LEFT - ONLY ROTOR 1 IMPLEMENTED
         pass3[`E] <= pass2[`A]; pass3[`K] <= pass2[`B]; pass3[`M] <= pass2[`C]; pass3[`F] <= pass2[`D]; pass3[`L] <= pass2[`E];
         pass3[`G] <= pass2[`F]; pass3[`D] <= pass2[`G]; pass3[`Q] <= pass2[`H]; pass3[`V] <= pass2[`I]; pass3[`Z] <= pass2[`J];
         pass3[`N] <= pass2[`K]; pass3[`T] <= pass2[`L]; pass3[`O] <= pass2[`M]; pass3[`W] <= pass2[`N]; pass3[`Y] <= pass2[`O];
-        pass3[`H] <= pass2[`P]; pass3[`X] <= pass2[`Q]; pass3[`Q] <= pass2[`R]; pass3[`S] <= pass2[`S]; pass3[`P] <= pass2[`T];
+        pass3[`H] <= pass2[`P]; pass3[`X] <= pass2[`Q]; pass3[`U] <= pass2[`R]; pass3[`S] <= pass2[`S]; pass3[`P] <= pass2[`T];
         pass3[`A] <= pass2[`U]; pass3[`I] <= pass2[`V]; pass3[`B] <= pass2[`W]; pass3[`R] <= pass2[`X]; pass3[`C] <= pass2[`Y]; pass3[`J] <= pass2[`Z];
-        
+       
         // PASS 4 - REFLECTOR C
         pass4[`A] <= pass3[`A]; pass4[`B] <= pass3[`B]; pass4[`C] <= pass3[`C]; pass4[`D] <= pass3[`D]; pass4[`E] <= pass3[`E];
-        pass4[`F] <= pass3[`F]; pass4[`G] <= pass3[`G]; pass4[`D] <= pass3[`H]; pass4[`I] <= pass3[`I]; pass4[`J] <= pass3[`J];
-        pass4[`K] <= pass3[`K]; pass4[`G] <= pass3[`L]; pass4[`M] <= pass3[`M]; pass4[`K] <= pass3[`N]; pass4[`M] <= pass3[`O];
-        pass4[`I] <= pass3[`P]; pass4[`E] <= pass3[`Q]; pass4[`B] <= pass3[`R]; pass4[`F] <= pass3[`S]; pass4[`T] <= pass3[`T];
-        pass4[`C] <= pass3[`U]; pass4[`V] <= pass3[`V]; pass4[`V] <= pass3[`W]; pass4[`J] <= pass3[`X]; pass4[`A] <= pass3[`Y]; pass4[`T] <= pass3[`Z];
+        pass4[`F] <= pass3[`F]; pass4[`G] <= pass3[`G]; pass4[`H] <= pass3[`H]; pass4[`I] <= pass3[`I]; pass4[`J] <= pass3[`J];
+        pass4[`K] <= pass3[`K]; pass4[`L] <= pass3[`L]; pass4[`M] <= pass3[`M]; pass4[`N] <= pass3[`N]; pass4[`O] <= pass3[`O];
+        pass4[`P] <= pass3[`P]; pass4[`Q] <= pass3[`Q]; pass4[`R] <= pass3[`R]; pass4[`S] <= pass3[`S]; pass4[`T] <= pass3[`T];
+        pass4[`U] <= pass3[`U]; pass4[`V] <= pass3[`V]; pass4[`W] <= pass3[`W]; pass4[`X] <= pass3[`X]; pass4[`Y] <= pass3[`Y]; pass4[`Z] <= pass3[`Z];
 
         // PASS 5 - ROTOR LEFT REVERESE
-        pass5[`Y] <= pass4[`A]; pass5[`R] <= pass4[`B]; pass5[`C] <= pass4[`C]; pass5[`D] <= pass4[`D]; pass5[`E] <= pass4[`E];
-        pass5[`F] <= pass4[`F]; pass5[`G] <= pass4[`G]; pass5[`H] <= pass4[`H]; pass5[`I] <= pass4[`I]; pass5[`J] <= pass4[`J];
-        pass5[`K] <= pass4[`K]; pass5[`L] <= pass4[`L]; pass5[`M] <= pass4[`M]; pass5[`N] <= pass4[`N]; pass5[`O] <= pass4[`O];
-        pass5[`P] <= pass4[`P]; pass5[`Q] <= pass4[`Q]; pass5[`R] <= pass4[`R]; pass5[`S] <= pass4[`S]; pass5[`T] <= pass4[`T];
-        pass5[`U] <= pass4[`U]; pass5[`V] <= pass4[`V]; pass5[`W] <= pass4[`W]; pass5[`X] <= pass4[`X]; pass5[`Y] <= pass4[`Y]; pass5[`Z] <= pass4[`Z];
+        pass5[`Y] <= pass4[`A]; pass5[`R] <= pass4[`B]; pass5[`U] <= pass4[`C]; pass5[`H] <= pass4[`D]; pass5[`Q] <= pass4[`E];
+        pass5[`S] <= pass4[`F]; pass5[`L] <= pass4[`G]; pass5[`D] <= pass4[`H]; pass5[`P] <= pass4[`I]; pass5[`X] <= pass4[`J];
+        pass5[`N] <= pass4[`K]; pass5[`G] <= pass4[`L]; pass5[`O] <= pass4[`M]; pass5[`K] <= pass4[`N]; pass5[`M] <= pass4[`O];
+        pass5[`I] <= pass4[`P]; pass5[`E] <= pass4[`Q]; pass5[`B] <= pass4[`R]; pass5[`F] <= pass4[`S]; pass5[`Z] <= pass4[`T];
+        pass5[`C] <= pass4[`U]; pass5[`W] <= pass4[`V]; pass5[`V] <= pass4[`W]; pass5[`J] <= pass4[`X]; pass5[`A] <= pass4[`Y]; pass5[`T] <= pass4[`Z];
 
 
         // PASS 6 - ROTOR MID REVERESE
@@ -522,39 +522,64 @@ end
 
 
         // PASS 7 - ROTOR RIGHT REVERESE
-        pass7[`A] <= pass6[`A]; pass7[`J] <= pass6[`B]; pass7[`C] <= pass6[`C]; pass7[`D] <= pass6[`D]; pass7[`E] <= pass6[`E];
-        pass7[`F] <= pass6[`F]; pass7[`G] <= pass6[`G]; pass7[`H] <= pass6[`H]; pass7[`I] <= pass6[`I]; pass7[`J] <= pass6[`J];
-        pass7[`K] <= pass6[`K]; pass7[`L] <= pass6[`L]; pass7[`M] <= pass6[`M]; pass7[`N] <= pass6[`N]; pass7[`O] <= pass6[`O];
-        pass7[`P] <= pass6[`P]; pass7[`Q] <= pass6[`Q]; pass7[`R] <= pass6[`R]; pass7[`S] <= pass6[`S]; pass7[`T] <= pass6[`T];
-        pass7[`U] <= pass6[`U]; pass7[`V] <= pass6[`V]; pass7[`W] <= pass6[`W]; pass7[`X] <= pass6[`X]; pass7[`Y] <= pass6[`Y]; pass7[`Z] <= pass6[`Z];
+        pass7[`A] <= pass6[`A]; pass7[`J] <= pass6[`B]; pass7[`P] <= pass6[`C]; pass7[`C] <= pass6[`D]; pass7[`Z] <= pass6[`E];
+        pass7[`W] <= pass6[`F]; pass7[`R] <= pass6[`G]; pass7[`L] <= pass6[`H]; pass7[`F] <= pass6[`I]; pass7[`B] <= pass6[`J];
+        pass7[`D] <= pass6[`K]; pass7[`K] <= pass6[`L]; pass7[`O] <= pass6[`M]; pass7[`T] <= pass6[`N]; pass7[`Y] <= pass6[`O];
+        pass7[`U] <= pass6[`P]; pass7[`Q] <= pass6[`Q]; pass7[`G] <= pass6[`R]; pass7[`E] <= pass6[`S]; pass7[`N] <= pass6[`T];
+        pass7[`H] <= pass6[`U]; pass7[`X] <= pass6[`V]; pass7[`M] <= pass6[`W]; pass7[`I] <= pass6[`X]; pass7[`V] <= pass6[`Y]; pass7[`S] <= pass6[`Z];
 
-
-        output_A = pass7[`A]; 
-        output_B = pass7[`B]; 
-        output_C = pass7[`C]; 
-        output_D = pass7[`D]; 
-        output_E = pass7[`E]; 
-        output_F = pass7[`F]; 
-        output_G = pass7[`G]; 
-        output_H = pass7[`H]; 
-        output_I = pass7[`I]; 
-        output_J = pass7[`J]; 
-        output_K = pass7[`K]; 
-        output_L = pass7[`L]; 
-        output_M = pass7[`M]; 
-        output_N = pass7[`N]; 
-        output_O = pass7[`O]; 
-        output_P = pass7[`P]; 
-        output_Q = pass7[`Q]; 
-        output_R = pass7[`R]; 
-        output_S = pass7[`S]; 
-        output_T = pass7[`T]; 
-        output_U = pass7[`U]; 
-        output_V = pass7[`V]; 
-        output_W = pass7[`W]; 
-        output_X = pass7[`X]; 
-        output_Y = pass7[`Y]; 
-        output_Z = pass7[`Z]; 
+//output_A = pass3[`A];
+//output_B = pass3[`B];
+//output_C = pass3[`C];
+//output_D = pass3[`D];
+//output_E = pass3[`E];
+//output_F = pass3[`F];
+//output_G = pass3[`G];
+//output_H = pass3[`H];
+//output_I = pass3[`I];
+//output_J = pass3[`J];
+//output_K = pass3[`K];
+//output_L = pass3[`L];
+//output_M = pass3[`M];
+//output_N = pass3[`N];
+//output_O = pass3[`O];
+//output_P = pass3[`P];
+//output_Q = pass3[`Q];
+//output_R = pass3[`R];
+//output_S = pass3[`S];
+//output_T = pass3[`T];
+//output_U = pass3[`U];
+//output_V = pass3[`V];
+//output_W = pass3[`W];
+//output_X = pass3[`X];
+//output_Y = pass3[`Y];
+//output_Z = pass3[`Z];
+        output_A = pass7[`B];
+        output_B = pass7[`D];
+        output_C = pass7[`F];
+        output_D = pass7[`H];
+        output_E = pass7[`J];
+        output_F = pass7[`L];
+        output_G = pass7[`C];
+        output_H = pass7[`P];
+        output_I = pass7[`R];
+        output_J = pass7[`T];
+        output_K = pass7[`X];
+        output_L = pass7[`V];
+        output_M = pass7[`Z];
+        output_N = pass7[`N];
+        output_O = pass7[`Y];
+        output_P = pass7[`E];
+        output_Q = pass7[`I];
+        output_R = pass7[`W];
+        output_S = pass7[`G];
+        output_T = pass7[`A];
+        output_U = pass7[`K];
+        output_V = pass7[`M];
+        output_W = pass7[`U];
+        output_X = pass7[`S];
+        output_Y = pass7[`Q];
+        output_Z = pass7[`O];
         end
         else if (sw[1]) begin
             //bbb
@@ -563,81 +588,81 @@ end
             pass1[`V] <= input_K; pass1[`Z] <= input_L; pass1[`N] <= input_M; pass1[`Y] <= input_N; pass1[`E]<= input_O;
             pass1[`I] <= input_P; pass1[`W] <= input_Q; pass1[`G] <= input_R; pass1[`A] <= input_S; pass1[`K] <= input_T;
             pass1[`M] <= input_U; pass1[`U] <= input_V; pass1[`S] <= input_W; pass1[`Q] <= input_X; pass1[`O] <= input_Y; pass1[`B] <= input_Z;
-            
+           
             // PASS 2 - ROTOR MID - ONLY ROTOR 2 IMPLEMENTE
             pass2[`A] <= pass1[`A]; pass2[`J] <= pass1[`B]; pass2[`D] <= pass1[`C]; pass2[`K] <= pass1[`D]; pass2[`S] <= pass1[`E];
             pass2[`I] <= pass1[`F]; pass2[`R] <= pass1[`G]; pass2[`U] <= pass1[`H]; pass2[`X] <= pass1[`I]; pass2[`B] <= pass1[`J];
             pass2[`L] <= pass1[`K]; pass2[`H] <= pass1[`L]; pass2[`W] <= pass1[`M]; pass2[`T] <= pass1[`N]; pass2[`M] <= pass1[`O];
             pass2[`C] <= pass1[`P]; pass2[`Q] <= pass1[`Q]; pass2[`G] <= pass1[`R]; pass2[`Z] <= pass1[`S]; pass2[`N] <= pass1[`T];
             pass2[`P] <= pass1[`U]; pass2[`Y] <= pass1[`V]; pass2[`F] <= pass1[`W]; pass2[`V] <= pass1[`X]; pass2[`O] <= pass1[`Y]; pass2[`E] <= pass1[`Z];
-    
-            
+   
+           
             // PASS 3 - ROTOR LEFT - ONLY ROTOR 1 IMPLEMENTED
             pass3[`E] <= pass2[`A]; pass3[`K] <= pass2[`B]; pass3[`M] <= pass2[`C]; pass3[`F] <= pass2[`D]; pass3[`L] <= pass2[`E];
             pass3[`G] <= pass2[`F]; pass3[`D] <= pass2[`G]; pass3[`Q] <= pass2[`H]; pass3[`V] <= pass2[`I]; pass3[`Z] <= pass2[`J];
             pass3[`N] <= pass2[`K]; pass3[`T] <= pass2[`L]; pass3[`O] <= pass2[`M]; pass3[`W] <= pass2[`N]; pass3[`Y] <= pass2[`O];
             pass3[`H] <= pass2[`P]; pass3[`X] <= pass2[`Q]; pass3[`Q] <= pass2[`R]; pass3[`Q] <= pass2[`S]; pass3[`P] <= pass2[`T];
             pass3[`A] <= pass2[`U]; pass3[`I] <= pass2[`V]; pass3[`B] <= pass2[`W]; pass3[`R] <= pass2[`X]; pass3[`C] <= pass2[`Y]; pass3[`J] <= pass2[`Z];
-            
+           
             // PASS 4 - REFLECTOR C
             pass4[`T] <= pass3[`A]; pass4[`A] <= pass3[`B]; pass4[`B] <= pass3[`C]; pass4[`C] <= pass3[`D]; pass4[`D] <= pass3[`E];
             pass4[`E] <= pass3[`F]; pass4[`F] <= pass3[`G]; pass4[`G] <= pass3[`H]; pass4[`D] <= pass3[`I]; pass4[`I] <= pass3[`J];
             pass4[`J] <= pass3[`K]; pass4[`K] <= pass3[`L]; pass4[`G] <= pass3[`M]; pass4[`M] <= pass3[`N]; pass4[`K] <= pass3[`O];
             pass4[`M] <= pass3[`P]; pass4[`I] <= pass3[`Q]; pass4[`E] <= pass3[`R]; pass4[`B] <= pass3[`S]; pass4[`F] <= pass3[`T];
             pass4[`T] <= pass3[`U]; pass4[`C] <= pass3[`V]; pass4[`V] <= pass3[`W]; pass4[`V] <= pass3[`X]; pass4[`J] <= pass3[`Y]; pass4[`A] <= pass3[`Z];
-    
+   
             // PASS 5 - ROTOR LEFT REVERESE
             pass5[`Z] <= pass4[`A]; pass5[`S] <= pass4[`B]; pass5[`V] <= pass4[`C]; pass5[`E] <= pass4[`D]; pass5[`R] <= pass4[`E];
             pass5[`F] <= pass4[`F]; pass5[`G] <= pass4[`G]; pass5[`H] <= pass4[`H]; pass5[`I] <= pass4[`I]; pass5[`J] <= pass4[`J];
             pass5[`K] <= pass4[`K]; pass5[`L] <= pass4[`L]; pass5[`M] <= pass4[`M]; pass5[`N] <= pass4[`N]; pass5[`O] <= pass4[`O];
             pass5[`P] <= pass4[`P]; pass5[`Q] <= pass4[`Q]; pass5[`R] <= pass4[`R]; pass5[`S] <= pass4[`S]; pass5[`T] <= pass4[`T];
             pass5[`U] <= pass4[`U]; pass5[`V] <= pass4[`V]; pass5[`W] <= pass4[`W]; pass5[`X] <= pass4[`X]; pass5[`Y] <= pass4[`Y]; pass5[`Z] <= pass4[`Z];
-    
-    
+   
+   
             // PASS 6 - ROTOR MID REVERESE
             pass6[`U] <= pass5[`A]; pass6[`W] <= pass5[`B]; pass6[`Y] <= pass5[`C]; pass6[`G] <= pass5[`D]; pass6[`A] <= pass5[`E];
             pass6[`D] <= pass5[`F]; pass6[`F] <= pass5[`G]; pass6[`P] <= pass5[`H]; pass6[`V] <= pass5[`I]; pass6[`Z] <= pass5[`J];
             pass6[`B] <= pass5[`K]; pass6[`E] <= pass5[`L]; pass6[`C] <= pass5[`M]; pass6[`K] <= pass5[`N]; pass6[`M] <= pass5[`O];
             pass6[`T] <= pass5[`P]; pass6[`H] <= pass5[`Q]; pass6[`X] <= pass5[`R]; pass6[`S] <= pass5[`S]; pass6[`L] <= pass5[`T];
             pass6[`R] <= pass5[`U]; pass6[`I] <= pass5[`V]; pass6[`N] <= pass5[`W]; pass6[`Q] <= pass5[`X]; pass6[`O] <= pass5[`Y]; pass6[`J] <= pass5[`Z];
-    
-    
+   
+   
             // PASS 7 - ROTOR RIGHT REVERESE
             pass7[`A] <= pass6[`A]; pass7[`J] <= pass6[`B]; pass7[`P] <= pass6[`C]; pass7[`C] <= pass6[`D]; pass7[`Z] <= pass6[`E];
             pass7[`W] <= pass6[`F]; pass7[`R] <= pass6[`G]; pass7[`L] <= pass6[`H]; pass7[`F] <= pass6[`I]; pass7[`B] <= pass6[`J];
             pass7[`D] <= pass6[`K]; pass7[`K] <= pass6[`L]; pass7[`O] <= pass6[`M]; pass7[`T] <= pass6[`N]; pass7[`Y] <= pass6[`O];
             pass7[`U] <= pass6[`P]; pass7[`Q] <= pass6[`Q]; pass7[`G] <= pass6[`R]; pass7[`E] <= pass6[`S]; pass7[`N] <= pass6[`T];
             pass7[`H] <= pass6[`U]; pass7[`X] <= pass6[`V]; pass7[`M] <= pass6[`W]; pass7[`I] <= pass6[`X]; pass7[`V] <= pass6[`Y]; pass7[`S] <= pass6[`Z];
-    
-    
-            output_A = pass7[`D]; 
-            output_B = pass7[`F]; 
-            output_C = pass7[`H]; 
-            output_D = pass7[`J]; 
-            output_E = pass7[`L]; 
-            output_F = pass7[`C]; 
-            output_G = pass7[`P]; 
-            output_H = pass7[`R]; 
-            output_I = pass7[`T]; 
-            output_J = pass7[`X]; 
-            output_K = pass7[`V]; 
-            output_L = pass7[`Z]; 
-            output_M = pass7[`N]; 
-            output_N = pass7[`Y]; 
-            output_O = pass7[`E]; 
-            output_P = pass7[`I]; 
-            output_Q = pass7[`W]; 
-            output_R = pass7[`G]; 
-            output_S = pass7[`A]; 
-            output_T = pass7[`K]; 
-            output_U= pass7[`M]; 
-            output_V = pass7[`U]; 
-            output_W = pass7[`S]; 
-            output_X = pass7[`Q]; 
-            output_Y = pass7[`O]; 
+   
+   
+            output_A = pass7[`D];
+            output_B = pass7[`F];
+            output_C = pass7[`H];
+            output_D = pass7[`J];
+            output_E = pass7[`L];
+            output_F = pass7[`C];
+            output_G = pass7[`P];
+            output_H = pass7[`R];
+            output_I = pass7[`T];
+            output_J = pass7[`X];
+            output_K = pass7[`V];
+            output_L = pass7[`Z];
+            output_M = pass7[`N];
+            output_N = pass7[`Y];
+            output_O = pass7[`E];
+            output_P = pass7[`I];
+            output_Q = pass7[`W];
+            output_R = pass7[`G];
+            output_S = pass7[`A];
+            output_T = pass7[`K];
+            output_U= pass7[`M];
+            output_V = pass7[`U];
+            output_W = pass7[`S];
+            output_X = pass7[`Q];
+            output_Y = pass7[`O];
             output_Z = pass7[`B];
-    
-    
+   
+   
         end
         else if (sw[2]) begin
             //ccc
@@ -646,7 +671,7 @@ end
         pass1[`Z] <= input_K; pass1[`N] <= input_L; pass1[`Y] <= input_M; pass1[`E] <= input_N; pass1[`I]<= input_O;
         pass1[`W] <= input_P; pass1[`G] <= input_Q; pass1[`A] <= input_R; pass1[`K] <= input_S; pass1[`M] <= input_T;
         pass1[`U] <= input_U; pass1[`S] <= input_V; pass1[`Q] <= input_W; pass1[`O] <= input_X; pass1[`B] <= input_Y; pass1[`D] <= input_Z;
-        
+       
         // PASS 2 - ROTOR MID - ONLY ROTOR 2 IMPLEMENTE
         pass2[`A] <= pass1[`A]; pass2[`J] <= pass1[`B]; pass2[`D] <= pass1[`C]; pass2[`K] <= pass1[`D]; pass2[`S] <= pass1[`E];
         pass2[`I] <= pass1[`F]; pass2[`R] <= pass1[`G]; pass2[`U] <= pass1[`H]; pass2[`X] <= pass1[`I]; pass2[`B] <= pass1[`J];
@@ -654,14 +679,14 @@ end
         pass2[`C] <= pass1[`P]; pass2[`Q] <= pass1[`Q]; pass2[`G] <= pass1[`R]; pass2[`Z] <= pass1[`S]; pass2[`N] <= pass1[`T];
         pass2[`P] <= pass1[`U]; pass2[`Y] <= pass1[`V]; pass2[`F] <= pass1[`W]; pass2[`V] <= pass1[`X]; pass2[`O] <= pass1[`Y]; pass2[`E] <= pass1[`Z];
 
-        
+       
         // PASS 3 - ROTOR LEFT - ONLY ROTOR 1 IMPLEMENTED
         pass3[`E] <= pass2[`A]; pass3[`K] <= pass2[`B]; pass3[`M] <= pass2[`C]; pass3[`F] <= pass2[`D]; pass3[`L] <= pass2[`E];
         pass3[`G] <= pass2[`F]; pass3[`D] <= pass2[`G]; pass3[`Q] <= pass2[`H]; pass3[`V] <= pass2[`I]; pass3[`Z] <= pass2[`J];
         pass3[`N] <= pass2[`K]; pass3[`T] <= pass2[`L]; pass3[`O] <= pass2[`M]; pass3[`W] <= pass2[`N]; pass3[`Y] <= pass2[`O];
         pass3[`H] <= pass2[`P]; pass3[`X] <= pass2[`Q]; pass3[`U] <= pass2[`R]; pass3[`S] <= pass2[`S]; pass3[`P] <= pass2[`T];
         pass3[`A] <= pass2[`U]; pass3[`I] <= pass2[`V]; pass3[`B] <= pass2[`W]; pass3[`R] <= pass2[`X]; pass3[`C] <= pass2[`Y]; pass3[`J] <= pass2[`Z];
-        
+       
         // PASS 4 - REFLECTOR C
         pass4[`A] <= pass3[`A]; pass4[`T] <= pass3[`B]; pass4[`A] <= pass3[`C]; pass4[`B] <= pass3[`D]; pass4[`C] <= pass3[`E];
         pass4[`D] <= pass3[`F]; pass4[`E] <= pass3[`G]; pass4[`F] <= pass3[`H]; pass4[`G] <= pass3[`I]; pass4[`D] <= pass3[`J];
@@ -693,67 +718,67 @@ end
         pass7[`H] <= pass6[`U]; pass7[`X] <= pass6[`V]; pass7[`M] <= pass6[`W]; pass7[`I] <= pass6[`X]; pass7[`V] <= pass6[`Y]; pass7[`S] <= pass6[`Z];
 
 
-        output_A = pass7[`F]; 
-        output_B = pass7[`H]; 
-        output_C = pass7[`J]; 
-        output_D = pass7[`L]; 
-        output_E = pass7[`C]; 
-        output_F = pass7[`P]; 
-        output_G = pass7[`R]; 
-        output_H = pass7[`T]; 
-        output_I = pass7[`X]; 
-        output_J = pass7[`V]; 
-        output_K = pass7[`Z]; 
-        output_L = pass7[`N]; 
-        output_M = pass7[`Y]; 
-        output_N = pass7[`E]; 
-        output_O = pass7[`I]; 
-        output_P = pass7[`W]; 
-        output_Q = pass7[`G]; 
-        output_R = pass7[`A]; 
-        output_S = pass7[`K]; 
-        output_T = pass7[`M]; 
-        output_U = pass7[`U]; 
-        output_V = pass7[`S]; 
-        output_W = pass7[`Q]; 
-        output_X = pass7[`O]; 
-        output_Y = pass7[`B]; 
+        output_A = pass7[`F];
+        output_B = pass7[`H];
+        output_C = pass7[`J];
+        output_D = pass7[`L];
+        output_E = pass7[`C];
+        output_F = pass7[`P];
+        output_G = pass7[`R];
+        output_H = pass7[`T];
+        output_I = pass7[`X];
+        output_J = pass7[`V];
+        output_K = pass7[`Z];
+        output_L = pass7[`N];
+        output_M = pass7[`Y];
+        output_N = pass7[`E];
+        output_O = pass7[`I];
+        output_P = pass7[`W];
+        output_Q = pass7[`G];
+        output_R = pass7[`A];
+        output_S = pass7[`K];
+        output_T = pass7[`M];
+        output_U = pass7[`U];
+        output_V = pass7[`S];
+        output_W = pass7[`Q];
+        output_X = pass7[`O];
+        output_Y = pass7[`B];
         output_Z = pass7[`D];
         end
         else begin
         //defalt  
-        output_A = input_A; 
-        output_B = input_B; 
-        output_C = input_C; 
-        output_D = input_D; 
-        output_E = input_E; 
-        output_F = input_F; 
-        output_G = input_G; 
-        output_H = input_H; 
-        output_I = input_I; 
-        output_J = input_J; 
-        output_K = input_K; 
-        output_L = input_L; 
-        output_M = input_M; 
-        output_N = input_N; 
-        output_O = input_O; 
-        output_P = input_P; 
-        output_Q = input_Q; 
-        output_R = input_R; 
-        output_S = input_S; 
-        output_T = input_T; 
-        output_U = input_U; 
-        output_V = input_V; 
-        output_W = input_W; 
-        output_X = input_X; 
-        output_Y = input_Y; 
-        output_Z = input_Z;   
+        output_A = input_A;
+        output_B = input_B;
+        output_C = input_C;
+        output_D = input_D;
+        output_E = input_E;
+        output_F = input_F;
+        output_G = input_G;
+        output_H = input_H;
+        output_I = input_I;
+        output_J = input_J;
+        output_K = input_K;
+        output_L = input_L;
+        output_M = input_M;
+        output_N = input_N;
+        output_O = input_O;
+        output_P = input_P;
+        output_Q = input_Q;
+        output_R = input_R;
+        output_S = input_S;
+        output_T = input_T;
+        output_U = input_U;
+        output_V = input_V;
+        output_W = input_W;
+        output_X = input_X;
+        output_Y = input_Y;
+        output_Z = input_Z;  
         end
     end
 
 
 always @(posedge CLK100MHZ) begin
-        
+       
         // Set the output pattern based on which input is active
         case (1'b1) // Only one input variable will be high at a time
             output_A: {o_lb4, o_lb3, o_lb2, o_lb1, o_lb0} <= 5'b00000;

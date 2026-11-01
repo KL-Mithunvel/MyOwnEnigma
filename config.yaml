@@ -113,3 +113,7 @@ sim:
   max_message_len: 60
   sim_scan_ticks: 40           # shortened keyboard dwell used only in simulation
   sim_lamp_min_on_ticks: 200
+  sim_button_debounce_ticks: 20
+  sim_heartbeat_ticks: 100
+  system_vectors_per_preset: 3   # full-system (keyboard -> lamp) runs per preset
+  system_message_len: 20

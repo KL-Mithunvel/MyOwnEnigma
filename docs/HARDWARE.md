@@ -48,6 +48,19 @@ legacy `test.v`.
 Other config lines in the master XDC (kept in the new constraints file): `CONFIG_VOLTAGE 3.3`,
 `CFGBVS VCCO`, SPI x4 config at 50 MHz, `INTERNAL_VREF 0.675` for bank 34.
 
+## User interface of `enigma_top` (only keyboard + lamp board + Arty needed)
+
+| Control | Function |
+|---------|----------|
+| `sw[1:0]` | Machine preset 0–3 (`config.yaml → presets`): rotors, rings, reflector, plugboard. Change between letters. |
+| `sw[2]` | **Setup mode.** Typed letters shift into the start window (last 3 typed = left, middle, right) and echo on the lamps; nothing is encrypted. Switch off to load the window into the rotors. |
+| `btn[0]` | Reload the typed start window into the rotors (start a new message). |
+| `btn[1]` `btn[2]` `btn[3]` | Hold to show the left / middle / right rotor window letter on the lamp board (no display needed). |
+| Keyboard | Each press steps the rotors, encrypts, and lights the lamp while the key is held (minimum on-time applies). |
+| `led[0]` key held · `led[1]` setup · `led[2]` plug error · `led[3]` heartbeat (bitstream alive) | |
+| RGB0 | Preset colour: red / green / blue / white = preset 0 / 1 / 2 / 3 |
+| RGB1 | Green = ready, blue = setup, red = plug error |
+
 ## Keyboard / lamp wiring checks to do on the bench (Phase 7)
 
 1. Each key produces exactly one row line high in exactly one column.

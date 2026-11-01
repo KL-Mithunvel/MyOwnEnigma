@@ -26,6 +26,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import enigma_ref as ref  # noqa: E402
 
 OUT = ROOT / "sim" / "build" / "vectors.txt"
+SYS_OUT = ROOT / "sim" / "build" / "sys_vectors.txt"
 
 
 def random_plugs(rng: random.Random, count: int) -> list[tuple[int, int]]:
@@ -51,8 +52,26 @@ def make_vector(rotors, rings, pos, refl, plugs, plain) -> str:
     return " ".join(str(f) for f in fields)
 
 
+def make_system_vectors(cfg: dict, rng: random.Random, presets: list[dict]) -> list[str]:
+    """Full-system vectors: preset, typed start window, message, ciphertext, final window.
+
+    Line: preset sl sm sr len plain[0..len-1] cipher[0..len-1] fl fm fr
+    """
+    lines = []
+    for idx, preset in enumerate(presets):
+        for _ in range(cfg["system_vectors_per_preset"]):
+            start = [rng.randrange(ref.N) for _ in range(3)]
+            plain = [rng.randrange(ref.N) for _ in range(cfg["system_message_len"])]
+            machine = ref.make_machine(preset["rotors"], preset["rings"], "".join(ref.to_letter(s) for s in start),
+                                       preset["reflector"], preset["plugs"])
+            cipher = [machine.encrypt_letter(c) for c in plain]
+            lines.append(" ".join(str(v) for v in [idx, *start, len(plain), *plain, *cipher, *machine.pos]))
+    return lines
+
+
 def main() -> None:
-    cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))["sim"]
+    full_cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
+    cfg = full_cfg["sim"]
     rng = random.Random(cfg["seed"])
     max_len = cfg["max_message_len"]
     lines = []
@@ -86,6 +105,10 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {OUT.relative_to(ROOT)} ({len(lines)} vectors)")
+
+    sys_lines = make_system_vectors(cfg, random.Random(cfg["seed"] + 1), full_cfg["presets"])
+    SYS_OUT.write_text("\n".join(sys_lines) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {SYS_OUT.relative_to(ROOT)} ({len(sys_lines)} vectors)")
 
 
 if __name__ == "__main__":

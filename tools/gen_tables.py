@@ -127,29 +127,27 @@ def build_presets(cfg: dict) -> str:
     presets = cfg["presets"]
     if not 1 <= len(presets) <= MAX_PRESETS:
         raise SystemExit(f"need 1..{MAX_PRESETS} presets, got {len(presets)}")
-    out = [BANNER, "// Included inside a module body that declares: preset_idx[1:0] and regs",
-           "// rotor_sel[8:0], ring_set[14:0], reflector_sel, plug_en[9:0], plug_a[49:0], plug_b[49:0].", "",
-           "    always @* begin", "        case (preset_idx)"]
-    def body(p: dict) -> list[str]:
+
+    def word(p: dict) -> str:
         rotors = [ref.ROTOR_NAMES.index(r) for r in p["rotors"]]
         rings = [ref.to_int(c) for c in p["rings"]]
         pairs = ref.parse_plugs(p["plugs"])
         en = sum(1 << k for k in range(len(pairs)))
         pa = pack5([a for a, _ in pairs])
         pb = pack5([b for _, b in pairs])
-        return [
-            f"                rotor_sel = {{3'd{rotors[0]}, 3'd{rotors[1]}, 3'd{rotors[2]}}};",
-            f"                ring_set = {{5'd{rings[0]}, 5'd{rings[1]}, 5'd{rings[2]}}};",
-            f"                reflector_sel = 1'd{ref.REFLECTOR_NAMES.index(p['reflector'])};",
-            f"                plug_en = 10'h{en:03x};",
-            f"                plug_a = 50'h{pa:013x};",
-            f"                plug_b = 50'h{pb:013x};",
-        ]
+        return (f"{{3'd{rotors[0]}, 3'd{rotors[1]}, 3'd{rotors[2]}, "
+                f"5'd{rings[0]}, 5'd{rings[1]}, 5'd{rings[2]}, "
+                f"1'd{ref.REFLECTOR_NAMES.index(p['reflector'])}, "
+                f"10'h{en:03x}, 50'h{pa:013x}, 50'h{pb:013x}}}")
 
+    out = [BANNER, "// Included inside a module body. preset_cfg returns, MSB first:",
+           "//   {rotor_sel[8:0], ring_set[14:0], reflector_sel, plug_en[9:0], plug_a[49:0], plug_b[49:0]}",
+           "// A function + continuous assign is used (not always @*) so it is defined from time 0 in simulation.", "",
+           "    function [134:0] preset_cfg;", "        input [1:0] idx;", "        begin", "            case (idx)"]
     for i, p in enumerate(presets):
-        out += [f"            2'd{i}: begin  // {p['name']}"] + body(p) + ["            end"]
-    out += ["            default: begin  // unused preset codes fall back to preset 0"] + body(presets[0]) + [
-        "            end", "        endcase", "    end", ""]
+        out.append(f"                2'd{i}: preset_cfg = {word(p)};  // {p['name']}")
+    out += [f"                default: preset_cfg = {word(presets[0])};  // unused codes fall back to preset 0",
+            "            endcase", "        end", "    endfunction", ""]
     return "\n".join(out)
 
 

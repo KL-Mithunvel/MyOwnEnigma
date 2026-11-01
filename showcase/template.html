@@ -1,0 +1,579 @@
+<title>MyOwnEnigma</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Special+Elite&display=swap">
+<style>
+  /* Design plan. Layout: one reading column that opens up to two columns for the machine; instrument-panel feel.
+     Color: ink-green neutrals, ivory keycaps, lamp amber as the single accent, board green for "done".
+     Type: Special Elite (typewriter) for the title and the machine's letters, IBM Plex Sans body, IBM Plex Mono data. */
+  :root {
+    --bg: #E8ECE9;
+    --surface: #F4F7F5;
+    --surface-2: #DCE3DE;
+    --ink: #101A15;
+    --ink-2: #41514A;
+    --line: #BFCBC4;
+    --accent: #9C5700;
+    --accent-ink: #1A1200;
+    --lamp-on: #FFC24A;
+    --key: #ECE8DA;
+    --key-ink: #1B1B16;
+    --key-edge: #B8B3A0;
+    --good: #1B6B47;
+    --warn: #A4321F;
+    --font-display: "Special Elite", "Courier New", monospace;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1310; --surface: #151D18; --surface-2: #1E2923; --ink: #E4ECE6; --ink-2: #9FB2A7;
+      --line: #2B3A32; --accent: #FFB547; --accent-ink: #1A1200; --lamp-on: #FFC24A;
+      --key: #D4D0C0; --key-ink: #1B1B16; --key-edge: #8D8978; --good: #55C78F; --warn: #FF8D78;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1310; --surface: #151D18; --surface-2: #1E2923; --ink: #E4ECE6; --ink-2: #9FB2A7;
+    --line: #2B3A32; --accent: #FFB547; --accent-ink: #1A1200; --lamp-on: #FFC24A;
+    --key: #D4D0C0; --key-ink: #1B1B16; --key-edge: #8D8978; --good: #55C78F; --warn: #FF8D78;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+    padding-block: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  section { padding-block: 40px 8px; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 600; line-height: 1.15; }
+  h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2.1rem, 6.4vw, 3.8rem); letter-spacing: -0.01em; }
+  h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.5rem, 3.6vw, 2.1rem); margin-bottom: 8px; }
+  h3 { font-size: 1.02rem; }
+  p { margin: 0; }
+  .lead { max-width: 62ch; font-size: 1.14rem; color: var(--ink-2); }
+  .sub { max-width: 66ch; color: var(--ink-2); margin-bottom: 20px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* hero */
+  .hero { padding-block: 44px 8px; display: grid; gap: 18px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 10px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .stat b { display: block; font-family: var(--font-mono); font-weight: 500; font-size: 1.5rem; line-height: 1.2; }
+  .stat span { display: block; color: var(--ink-2); font-size: 0.92rem; }
+  .stat small { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-2); overflow-wrap: anywhere; }
+  .stat.pending b { color: var(--accent); }
+
+  /* machine */
+  .machine { display: grid; gap: 18px; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
+  @media (max-width: 860px) { .machine { grid-template-columns: minmax(0, 1fr); } }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+  .panel h3 { margin-bottom: 10px; }
+  .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  button, select, input { font: inherit; color: inherit; }
+  .btn { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-height: 44px; }
+  .btn:hover { border-color: var(--accent); }
+  .btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .btn small { display: block; color: var(--ink-2); font-size: 0.74rem; line-height: 1.25; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; text-align: center; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+  label { display: block; font-size: 0.78rem; color: var(--ink-2); margin-bottom: 3px; }
+  select, input[type="text"] { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 40px; }
+  .msg { min-height: 1.4em; font-size: 0.85rem; color: var(--warn); }
+  .row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .row-btns .btn { text-align: center; flex: 1 1 130px; }
+
+  .windows { display: flex; justify-content: center; gap: 14px; margin-bottom: 14px; }
+  .window { text-align: center; }
+  .window .glass { width: 62px; height: 78px; display: grid; place-items: center; font-family: var(--font-display); font-size: 2.5rem;
+    background: #0F1311; color: #F3EFD8; border-radius: 8px; border: 3px solid var(--key-edge); box-shadow: inset 0 6px 14px #000; }
+  .window small { display: block; margin-top: 4px; font-size: 0.74rem; color: var(--ink-2); }
+
+  .lamps, .keys { display: grid; gap: 8px; justify-content: center; }
+  .lamps { margin-bottom: 16px; padding: 14px 6px; background: #0F1311; border-radius: 10px; border: 3px solid var(--key-edge); }
+  .krow { display: flex; justify-content: center; gap: clamp(4px, 1.3vw, 9px); }
+  .lamp { width: clamp(30px, 8.4vw, 50px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display);
+    font-size: clamp(0.95rem, 3vw, 1.35rem); color: #6E7A73; background: #1B221E; border: 2px solid #2D3832; transition: background .08s, color .08s, box-shadow .08s; }
+  .lamp.on { color: var(--accent-ink); background: var(--lamp-on); border-color: #FFE29A; box-shadow: 0 0 18px 4px #FFB52F88; }
+  .key { width: clamp(30px, 8.4vw, 50px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; cursor: pointer; padding: 0;
+    font-family: var(--font-display); font-size: clamp(0.95rem, 3vw, 1.35rem); color: var(--key-ink); background: var(--key);
+    border: 2px solid var(--key-edge); box-shadow: 0 3px 0 var(--key-edge); touch-action: manipulation; }
+  .key.down { transform: translateY(2px); box-shadow: 0 1px 0 var(--key-edge); }
+  .keys[aria-disabled="true"] { opacity: .45; }
+
+  .tape { display: grid; gap: 6px; margin-top: 16px; }
+  .tape-line { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+  .tape-line b { font-family: var(--font-mono); font-weight: 500; font-size: 0.78rem; color: var(--ink-2); }
+  .tape-text { font-family: var(--font-mono); letter-spacing: 0.08em; min-height: 1.6em; overflow-wrap: anywhere; word-break: break-all; }
+  .tape-text.out { color: var(--accent); }
+
+  .trace { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; padding: 0; list-style: none; }
+  .trace li { display: grid; justify-items: center; min-width: 52px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .trace li em { font-style: normal; font-size: 0.66rem; color: var(--ink-2); line-height: 1.2; text-align: center; }
+  .trace li strong { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; }
+  .trace li.back { border-style: dashed; }
+  .note { font-size: 0.85rem; color: var(--ink-2); }
+  .selfcheck { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  .selfcheck .badge { font-family: var(--font-mono); font-weight: 500; color: var(--good); }
+  .selfcheck.fail .badge { color: var(--warn); }
+  .selfcheck details { margin-top: 8px; }
+  .selfcheck summary { cursor: pointer; color: var(--ink-2); font-size: 0.9rem; }
+  .vec { font-family: var(--font-mono); font-size: 0.8rem; display: grid; grid-template-columns: 1.2em minmax(0, 1fr); gap: 4px 8px; margin-top: 8px; }
+  .vec .ok { color: var(--good); } .vec .bad { color: var(--warn); }
+
+  /* pipeline */
+  .pipe { display: grid; gap: 10px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  @media (max-width: 980px) { .pipe { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .pipe { grid-template-columns: minmax(0, 1fr); } }
+  .stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+  .stage .tag { justify-self: start; font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--ink-2); }
+  .stage .tag.fpga { color: var(--accent); border-color: var(--accent); }
+  .stage code { color: var(--ink); font-weight: 500; }
+  .stage p { font-size: 0.9rem; color: var(--ink-2); }
+  .path { margin-top: 12px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink-2); overflow-x: auto; white-space: nowrap; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .path b { color: var(--ink); font-weight: 500; }
+
+  /* tables and bars */
+  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--font-mono); white-space: nowrap; }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+  @media (max-width: 720px) { .three { grid-template-columns: minmax(0, 1fr); } }
+  .impl { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+  .impl b { font-family: var(--font-mono); font-weight: 500; font-size: 0.8rem; color: var(--accent); display: block; margin-bottom: 4px; }
+  .impl p { font-size: 0.92rem; color: var(--ink-2); }
+  .bars { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .bar-label { display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; margin-bottom: 5px; flex-wrap: wrap; }
+  .track { height: 22px; background: var(--surface-2); border-radius: 6px; position: relative; overflow: hidden; }
+  .fill { height: 100%; background: var(--accent); border-radius: 6px; min-width: 3px; }
+  .fill.good { background: var(--good); }
+  .cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+  @media (max-width: 720px) { .cols2 { grid-template-columns: minmax(0, 1fr); } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .card h3 { margin-bottom: 4px; }
+  .card p { font-size: 0.92rem; color: var(--ink-2); }
+
+  /* photos */
+  .photos { display: grid; gap: 12px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  @media (max-width: 720px) { .photos { grid-template-columns: minmax(0, 1fr); } }
+  figure { margin: 0; display: grid; gap: 6px; }
+  figure img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  figcaption { font-size: 0.82rem; color: var(--ink-2); }
+
+  /* status */
+  .status { display: grid; gap: 10px; }
+  .step { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+  @media (max-width: 520px) { .step { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+  .step b { font-family: var(--font-mono); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .step.done b { color: var(--good); } .step.next b { color: var(--accent); } .step.later b { color: var(--ink-2); }
+  .step p { font-size: 0.93rem; color: var(--ink-2); }
+  .step p strong { color: var(--ink); font-weight: 500; }
+
+  footer { padding-block: 40px 56px; color: var(--ink-2); font-size: 0.9rem; display: grid; gap: 14px; }
+  pre { margin: 0; font-family: var(--font-mono); font-size: 0.82rem; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .lamp, .key { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">FPGA project · Verilog · Arty S7-50</p>
+    <h1>A WWII Enigma, rebuilt in Verilog.</h1>
+    <p class="lead">Three rotors, a plugboard, a reflector and a lampboard, running on a Xilinx Spartan-7 FPGA. The design is checked in simulation against an independent model. Testing on the real keyboard and lampboard is the next step.</p>
+    <div class="stats">
+      <div class="stat"><b>{{luts}} LUTs</b><span>{{lut_pct}}% of the XC7S50 chip, no latches</span><small>python tools/synth_check.py</small></div>
+      <div class="stat"><b>{{checks_total}} checks</b><span>4 testbenches in simulation, 0 errors</span><small>python tools/run_sim.py --all</small></div>
+      <div class="stat"><b>{{mut_killed}} of {{mut_total}}</b><span>bugs injected on purpose, all caught</span><small>python tools/mutation_check.py</small></div>
+      <div class="stat pending"><b>Bench test next</b><span>hardware verification is not done yet</span><small>docs/BRINGUP.md, stages S0 to S10</small></div>
+    </div>
+  </header>
+
+  <section id="machine" aria-labelledby="h-machine">
+    <h2 id="h-machine">Try the machine</h2>
+    <p class="sub">This page runs the same algorithm as the Verilog. Tap the keys, or click anywhere on the page and type. The four presets match the board's <code>sw[1:0]</code> switches.</p>
+    <div class="machine">
+      <div class="panel" id="settings">
+        <h3>Settings</h3>
+        <div class="presets" id="presets" role="group" aria-label="FPGA presets"></div>
+        <div class="grid3">
+          <div><label for="rot-l">Left rotor</label><select id="rot-l"></select></div>
+          <div><label for="rot-m">Middle rotor</label><select id="rot-m"></select></div>
+          <div><label for="rot-r">Right rotor</label><select id="rot-r"></select></div>
+          <div><label for="ring-l">Ring left</label><select id="ring-l"></select></div>
+          <div><label for="ring-m">Ring middle</label><select id="ring-m"></select></div>
+          <div><label for="ring-r">Ring right</label><select id="ring-r"></select></div>
+          <div><label for="start-l">Start left</label><select id="start-l"></select></div>
+          <div><label for="start-m">Start middle</label><select id="start-m"></select></div>
+          <div><label for="start-r">Start right</label><select id="start-r"></select></div>
+        </div>
+        <div class="grid3" style="grid-template-columns: minmax(0,1fr) minmax(0,2fr)">
+          <div><label for="refl">Reflector</label><select id="refl"><option>B</option><option>C</option></select></div>
+          <div><label for="plugs">Plugboard pairs (up to 10)</label><input type="text" id="plugs" placeholder="AV BS CG DL" autocomplete="off" spellcheck="false" maxlength="40"></div>
+        </div>
+        <p class="msg" id="msg" role="status"></p>
+        <div class="row-btns">
+          <button class="btn" id="btn-new" type="button">New message</button>
+          <button class="btn" id="btn-hello" type="button">Type HELLOWORLD</button>
+          <button class="btn" id="btn-decrypt" type="button">Decrypt the tape</button>
+        </div>
+      </div>
+
+      <div class="panel" id="board">
+        <div class="windows" aria-label="Rotor windows">
+          <div class="window"><div class="glass" id="win-l">A</div><small>left</small></div>
+          <div class="window"><div class="glass" id="win-m">A</div><small>middle</small></div>
+          <div class="window"><div class="glass" id="win-r">A</div><small>right</small></div>
+        </div>
+        <div class="lamps" id="lamps" aria-label="Lampboard"></div>
+        <div class="keys" id="keys" role="group" aria-label="Keyboard"></div>
+        <div class="tape">
+          <div class="tape-line"><b>In</b><div class="tape-text" id="tape-in"></div></div>
+          <div class="tape-line"><b>Out</b><div class="tape-text out" id="tape-out" aria-live="off"></div></div>
+          <div class="row-btns" style="margin-top:2px"><button class="btn" id="btn-copy" type="button">Copy output</button></div>
+        </div>
+        <h3 style="margin-top:18px">Path of the last letter</h3>
+        <ol class="trace" id="trace" aria-label="Signal path"></ol>
+        <p class="note" id="trace-note">Press a key. The rotors step first, then the signal runs right to left, bounces off the reflector and returns left to right (dashed).</p>
+      </div>
+    </div>
+    <div class="selfcheck" id="selfcheck">
+      <span class="badge" id="sc-badge">Self-check running</span>
+      <span> against the Python reference model that the Verilog testbenches use.</span>
+      <details><summary>Show the vectors</summary><div class="vec" id="sc-list"></div></details>
+    </div>
+    <div class="sr-only" id="announce" aria-live="polite"></div>
+  </section>
+
+  <section id="fpga" aria-labelledby="h-fpga">
+    <h2 id="h-fpga">What runs on the FPGA</h2>
+    <p class="sub">The 2024 prototype lit a lamp for every key. The rebuild adds the cipher itself and splits the design into small modules, each with its own testbench.</p>
+    <div class="pipe">
+      <div class="stage"><span class="tag">Hardware</span><h3>Keyboard</h3><p>29 keys in a diode matrix, read through one CD74HC4067 multiplexer.</p></div>
+      <div class="stage"><span class="tag fpga">FPGA</span><h3><code>key_scanner</code></h3><p>Scans 9 columns, waits for the multiplexer to settle, debounces over 3 scans and ignores two-key presses.</p></div>
+      <div class="stage"><span class="tag fpga">FPGA</span><h3><code>enigma_core</code></h3><p>Steps the rotors, including the double-step, then runs the letter through plugboard, rotors and reflector. One shared rotor unit, 15 clocks per letter.</p></div>
+      <div class="stage"><span class="tag fpga">FPGA</span><h3><code>lamp_driver</code></h3><p>Turns the letter into a 5-bit multiplexer code. The lamp stays lit while the key is held.</p></div>
+      <div class="stage"><span class="tag">Hardware</span><h3>Lampboard</h3><p>26 LEDs on two CD74HC4067 multiplexers.</p></div>
+    </div>
+    <div class="path"><b>enigma_core</b>: plugboard → right rotor → middle rotor → left rotor → reflector → left → middle → right → plugboard. Each rotor stage takes two clocks (add the offset, then look up the wiring), so no clock chains more logic than the 100 MHz timing allows.</div>
+    <div class="cols2">
+      <div class="card"><h3>Controls on the Arty S7</h3><p><code>sw[1:0]</code> picks one of four machine presets. <code>sw[2]</code> is setup mode: type the start letters on the keyboard. <code>btn[1..3]</code> show the three rotor windows on the lampboard, so no display is needed.</p></div>
+      <div class="card"><h3>Built for bring-up</h3><p>Hold all three buttons for a lamp self-test that sweeps A to Z without the keyboard. A bring-up guide lists eleven bench stages with the expected lamps for each.</p></div>
+    </div>
+  </section>
+
+  <section id="verify" aria-labelledby="h-verify">
+    <h2 id="h-verify">How I know it is right</h2>
+    <p class="sub">Three separate implementations of the cipher agree with each other. The Verilog is only accepted when it matches the reference model on every check.</p>
+    <div class="three">
+      <div class="impl"><b>1 · PYTHON</b><p>A reference model, tested against published Enigma results such as AAAAA → BDZGO and the double-step sequence ADU → ADV → AEW → BFX.</p></div>
+      <div class="impl"><b>2 · VERILOG</b><p>The FPGA design, simulated in Icarus Verilog against vectors the Python model generates.</p></div>
+      <div class="impl"><b>3 · JAVASCRIPT</b><p>The machine on this page. Its self-check runs the same kind of vectors in your browser.</p></div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Check</th><th>What it covers</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><code>tb_enigma_core</code></td><td>Directed tests plus {{vectors_core}} machines from the model: all five rotors in every slot, both reflectors, 0 to 10 plug pairs, a 700-letter run</td><td class="num">{{checks_core}} checks</td></tr>
+          <tr><td><code>tb_key_scanner</code></td><td>A model of the diode matrix: all 26 keys, hold, release, bounce, two keys at once</td><td class="num">{{checks_keys}} checks</td></tr>
+          <tr><td><code>tb_lamp_driver</code></td><td>Lamp codes written out independently of the generated table</td><td class="num">{{checks_lamps}} checks</td></tr>
+          <tr><td><code>tb_enigma_top</code></td><td>Whole system: keyboard model to lamps, four presets, setup mode, window display, lamp self-test</td><td class="num">{{checks_top}} checks</td></tr>
+          <tr><td>Mutation check</td><td>{{mut_total}} bugs injected into the Verilog, such as no double-step, a wrong notch, a lamp enable that is not inverted</td><td class="num">{{mut_killed}} of {{mut_total}} caught</td></tr>
+          <tr><td>pytest</td><td>Key matrix and lamp codes compared with the 2024 code that worked on the real keyboard, pin map compared with Digilent's file, generated files in sync, rules for synthesizable code</td><td class="num">{{pytest_passed}} passed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:10px">All results are from simulation on a development PC. The mutation check exists to show the testbenches can fail, not only pass.</p>
+  </section>
+
+  <section id="synth" aria-labelledby="h-synth">
+    <h2 id="h-synth">Synthesis found a 17× problem</h2>
+    <p class="sub">The simulation passed from the first run, so it could not show this. Synthesizing for the Spartan-7 showed the first draft using {{luts_first}} LUTs, which is {{lut_first_pct}}% of the chip for a small design.</p>
+    <div class="bars">
+      <div><div class="bar-label"><span>First synthesis run</span><span class="mono">{{luts_first}} LUTs · {{lut_first_pct}}% of the device</span></div><div class="track"><div class="fill" style="width: {{lut_first_pct}}%"></div></div></div>
+      <div><div class="bar-label"><span>Final design</span><span class="mono">{{luts}} LUTs · {{lut_pct}}% of the device</span></div><div class="track"><div class="fill good" style="width: {{lut_pct}}%"></div></div></div>
+      <p class="note">Bars are drawn to the same scale: full width is the 32,600 LUTs of the XC7S50. Flip-flops: {{ffs}}. Block RAM and DSP slices: none.</p>
+    </div>
+    <div class="cols2">
+      <div class="card"><h3>The plugboard built a full table</h3><p>It built a 26-entry map to swap one letter. It now compares the letter with each pair directly.</p></div>
+      <div class="card"><h3>ROM lookups were barrel shifters</h3><p>Indexing a 130-bit constant with <code>idx*5</code> synthesizes as a wide shifter. The tables are now flat case statements that map to small LUT ROMs.</p></div>
+      <div class="card"><h3>Six copies of one rotor</h3><p>The letter passes one stage at a time, so a single shared rotor unit does all six rotor passes.</p></div>
+      <div class="card"><h3>32-bit counters everywhere</h3><p>Counters are now only as wide as the delay they count.</p></div>
+    </div>
+  </section>
+
+  <section id="hardware" aria-labelledby="h-hw">
+    <h2 id="h-hw">The 2024 hardware</h2>
+    <p class="sub">A team of four at VIT Chennai built the keyboard, the lampboard and the cases for a Mechatronics course. The prototype lit the right lamp for each key. The cipher in that code did not step the rotors or use a real reflector, so I rebuilt it.</p>
+    <div class="photos">
+      <figure><img alt="Arty S7 board, custom keyboard, breadboard and lampboard laid out on a table" src="{{img_parts}}"><figcaption>The parts: Arty S7, keyboard in its 3D-printed case, and the lampboard.</figcaption></figure>
+      <figure><img alt="Custom keyboard with the Enigma QWERTZ layout" src="{{img_keyboard}}"><figcaption>Keyboard in the Enigma layout, 29 switches.</figcaption></figure>
+      <figure><img alt="Lampboard with 26 green LEDs and letter labels" src="{{img_lamps}}"><figcaption>Lampboard, 26 LEDs on two multiplexers.</figcaption></figure>
+    </div>
+    <p class="note" style="margin-top:10px">Photos are from the 2024 team poster. The case designs are in Onshape and the schematics in KiCad.</p>
+  </section>
+
+  <section id="status" aria-labelledby="h-status">
+    <h2 id="h-status">Where it stands</h2>
+    <div class="status">
+      <div class="step done"><b>Done · 2024</b><p>Keyboard, lampboard and cases built. Each key lit its own lamp on the real board.</p></div>
+      <div class="step done"><b>Done · 2026</b><p>Cipher rebuilt and verified in simulation. <strong>Synthesizes to {{luts}} LUTs</strong> for the Spartan-7. Pin constraints checked against Digilent's file.</p></div>
+      <div class="step next"><b>Next</b><p>Build in Vivado and read the timing report, then work through the bench stages with the real keyboard and lampboard. Results go into the guide's table.</p></div>
+      <div class="step later"><b>Later</b><p>Morse-code output from the original poster, a serial link to a PC, and entering plugboard settings from the keyboard.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <p><strong>2024 prototype</strong>: Mithunvel KL, Kiran T, Madhumitha V, Josika P. Mechatronics and Automation, Vellore Institute of Technology, Chennai.</p>
+      <p><strong>2026 rebuild</strong>: Mithunvel KL, developed with Claude Code as an AI pair programmer. Every number above is produced by the commands shown, and the page is built from their output.</p>
+    </div>
+    <pre>python tools/run_sim.py --all      # testbenches
+python tools/mutation_check.py     # bugs injected on purpose
+python tools/synth_check.py        # synthesis for the Spartan-7
+python tools/bringup_expected.py   # what to type and see on the bench</pre>
+    <p>Source: <a href="https://github.com/KL-Mithunvel/MyOwnEnigma" rel="noopener">github.com/KL-Mithunvel/MyOwnEnigma</a></p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+(() => {
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const ROTORS = {
+    I:   { w: "EKMFLGDQVZNTOWYHXUSPAIBRCJ", n: "Q" },
+    II:  { w: "AJDKSIRUXBLHWTMCQGZNPYFVOE", n: "E" },
+    III: { w: "BDFHJLCPRTXVZNYEIWGAKMUSQO", n: "V" },
+    IV:  { w: "ESOVPZJAYQUIRHXLNFTGKDCMWB", n: "J" },
+    V:   { w: "VZBRGITYUPSDNHLXAWMJQOFECK", n: "Z" },
+  };
+  const REFLECTORS = { B: "YRUHQSLDPXNGOKMIEBFZCWVJAT", C: "FVPJIAOYEDRZXWGCTKUQSBNMHL" };
+  const PRESETS = {{presets_json}};
+  const VECTORS = {{vectors_json}};
+  const LAYOUT = ["QWERTZUIO", "ASDFGHJK", "PYXCVBNML"];
+  const mod26 = (n) => ((n % 26) + 26) % 26;
+  const $ = (id) => document.getElementById(id);
+
+  function parsePlugs(spec) {
+    const map = Array.from({ length: 26 }, (_, i) => i);
+    const tokens = spec.toUpperCase().split(/\s+/).filter(Boolean);
+    if (tokens.length > 10) return { map, error: "At most 10 plug pairs." };
+    const used = new Set();
+    for (const t of tokens) {
+      if (!/^[A-Z]{2}$/.test(t)) return { map, error: `"${t}" is not a pair of two letters.` };
+      if (t[0] === t[1]) return { map, error: `${t} connects a letter to itself.` };
+      const a = A.indexOf(t[0]), b = A.indexOf(t[1]);
+      if (used.has(a) || used.has(b)) return { map, error: `A letter appears twice (${t}).` };
+      used.add(a); used.add(b); map[a] = b; map[b] = a;
+    }
+    return { map, error: null };
+  }
+
+  class Machine {
+    constructor(rotors, rings, pos, reflector, plugMap) {
+      this.rotors = rotors; this.rings = rings; this.pos = pos.slice(); this.reflector = reflector; this.plug = plugMap;
+    }
+    notch(slot) { return A.indexOf(ROTORS[this.rotors[slot]].n); }
+    step() {
+      const midAt = this.pos[1] === this.notch(1), rightAt = this.pos[2] === this.notch(2);
+      if (midAt) this.pos[0] = mod26(this.pos[0] + 1);
+      if (midAt || rightAt) this.pos[1] = mod26(this.pos[1] + 1);
+      this.pos[2] = mod26(this.pos[2] + 1);
+    }
+    pass(slot, c, forward) {
+      const w = ROTORS[this.rotors[slot]].w;
+      const shift = mod26(this.pos[slot] - this.rings[slot]);
+      const entry = mod26(c + shift);
+      const out = forward ? A.indexOf(w[entry]) : w.indexOf(A[entry]);
+      return mod26(out - shift);
+    }
+    press(c) {
+      this.step();
+      const trace = [c];
+      c = this.plug[c]; trace.push(c);
+      for (const s of [2, 1, 0]) { c = this.pass(s, c, true); trace.push(c); }
+      c = A.indexOf(REFLECTORS[this.reflector][c]); trace.push(c);
+      for (const s of [0, 1, 2]) { c = this.pass(s, c, false); trace.push(c); }
+      c = this.plug[c]; trace.push(c);
+      return { out: c, trace };
+    }
+  }
+
+  function machineFrom(cfg) {
+    const plugs = parsePlugs(cfg.plugs || "");
+    return new Machine(cfg.rotors, [...cfg.rings].map((ch) => A.indexOf(ch)), [...cfg.start].map((ch) => A.indexOf(ch)), cfg.reflector, plugs.map);
+  }
+
+  // ---- self-check -------------------------------------------------------------------------
+  function runSelfCheck() {
+    let ok = 0;
+    const list = $("sc-list");
+    list.textContent = "";
+    for (const v of VECTORS) {
+      const m = machineFrom(v);
+      const got = [...v.plain].map((ch) => A[m.press(A.indexOf(ch)).out]).join("");
+      const pass = got === v.cipher;
+      if (pass) ok++;
+      const mark = document.createElement("span"); mark.className = pass ? "ok" : "bad"; mark.textContent = pass ? "✓" : "✗";
+      const text = document.createElement("span");
+      text.textContent = `${v.name}: ${v.plain.length > 14 ? v.plain.slice(0, 14) + "…" : v.plain} → ${v.cipher.length > 14 ? v.cipher.slice(0, 14) + "…" : v.cipher}` + (pass ? "" : ` (this page computed ${got})`);
+      list.append(mark, text);
+    }
+    $("sc-badge").textContent = `${ok} of ${VECTORS.length} vectors match`;
+    $("selfcheck").classList.toggle("fail", ok !== VECTORS.length);
+  }
+
+  // ---- machine UI -------------------------------------------------------------------------------
+  const letterOptions = (sel, selected) => { sel.textContent = ""; for (const ch of A) { const o = document.createElement("option"); o.textContent = ch; sel.append(o); } sel.value = selected; };
+  for (const id of ["rot-l", "rot-m", "rot-r"]) { const s = $(id); for (const r of Object.keys(ROTORS)) { const o = document.createElement("option"); o.textContent = r; s.append(o); } }
+  for (const id of ["ring-l", "ring-m", "ring-r", "start-l", "start-m", "start-r"]) letterOptions($(id), "A");
+
+  const lampEls = {}, keyEls = {};
+  const lampsRoot = $("lamps"), keysRoot = $("keys");
+  for (const row of LAYOUT) {
+    const lr = document.createElement("div"); lr.className = "krow";
+    const kr = document.createElement("div"); kr.className = "krow";
+    for (const ch of row) {
+      const l = document.createElement("div"); l.className = "lamp"; l.textContent = ch; l.setAttribute("aria-hidden", "true"); lr.append(l); lampEls[ch] = l;
+      const k = document.createElement("button"); k.className = "key"; k.type = "button"; k.textContent = ch; k.setAttribute("aria-label", `Key ${ch}`); kr.append(k); keyEls[ch] = k;
+    }
+    lampsRoot.append(lr); keysRoot.append(kr);
+  }
+
+  let machine = null, valid = true, plainTape = "", cipherTape = "", lampTimer = null, playToken = 0;
+
+  function readConfig() {
+    return {
+      rotors: ["rot-l", "rot-m", "rot-r"].map((id) => $(id).value),
+      rings: ["ring-l", "ring-m", "ring-r"].map((id) => $(id).value).join(""),
+      start: ["start-l", "start-m", "start-r"].map((id) => $(id).value).join(""),
+      reflector: $("refl").value,
+      plugs: $("plugs").value,
+    };
+  }
+  function windows() { ["l", "m", "r"].forEach((s, i) => { $("win-" + s).textContent = A[machine.pos[i]]; }); }
+  function clearLamps() { for (const ch in lampEls) lampEls[ch].classList.remove("on"); }
+  function renderTape() {
+    const group = (t) => t.replace(/(.{5})/g, "$1 ").trim();
+    $("tape-in").textContent = group(plainTape); $("tape-out").textContent = group(cipherTape);
+  }
+  function clearTrace() { $("trace").textContent = ""; }
+
+  function rebuild(clearTapes) {
+    const cfg = readConfig();
+    const plugs = parsePlugs(cfg.plugs);
+    let err = plugs.error;
+    if (!err && new Set(cfg.rotors).size !== 3) err = "Each rotor can be fitted only once.";
+    valid = !err;
+    $("msg").textContent = err || "";
+    keysRoot.setAttribute("aria-disabled", valid ? "false" : "true");
+    machine = machineFrom(cfg);
+    windows(); clearLamps(); clearTrace();
+    if (clearTapes) { plainTape = ""; cipherTape = ""; renderTape(); }
+  }
+
+  const LABELS = ["Key", "Plugboard", "Right rotor", "Middle rotor", "Left rotor", "Reflector", "Left rotor", "Middle rotor", "Right rotor", "Plugboard"];
+  function showTrace(trace) {
+    const ol = $("trace"); ol.textContent = "";
+    trace.forEach((c, i) => {
+      const li = document.createElement("li");
+      if (i >= 6) li.className = "back";
+      const s = document.createElement("strong"); s.textContent = A[c];
+      const e = document.createElement("em"); e.textContent = LABELS[i];
+      li.append(s, e); ol.append(li);
+    });
+    $("trace-note").textContent = `The rotors stepped to ${A[machine.pos[0]]}${A[machine.pos[1]]}${A[machine.pos[2]]} before the letter flowed. ${A[trace[0]]} became ${A[trace[trace.length - 1]]}; it can never be the same letter.`;
+  }
+
+  function press(letter, hold) {
+    if (!valid) return;
+    const res = machine.press(A.indexOf(letter));
+    const out = A[res.out];
+    plainTape += letter; cipherTape += out; renderTape(); windows(); showTrace(res.trace);
+    clearLamps(); lampEls[out].classList.add("on");
+    $("announce").textContent = `${letter} becomes ${out}`;
+    clearTimeout(lampTimer);
+    if (!hold) lampTimer = setTimeout(clearLamps, 650);
+  }
+  function release() { clearTimeout(lampTimer); lampTimer = setTimeout(clearLamps, 180); }
+
+  for (const ch in keyEls) {
+    const k = keyEls[ch];
+    k.addEventListener("pointerdown", (e) => { e.preventDefault(); k.classList.add("down"); press(ch, true); });
+    const up = () => { if (k.classList.contains("down")) { k.classList.remove("down"); release(); } };
+    k.addEventListener("pointerup", up); k.addEventListener("pointerleave", up); k.addEventListener("pointercancel", up);
+    k.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") e.preventDefault(); });
+  }
+  const typing = (t) => t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA");
+  document.addEventListener("keydown", (e) => {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+    const ch = e.key.length === 1 ? e.key.toUpperCase() : "";
+    if (ch && keyEls[ch]) { playToken++; keyEls[ch].classList.add("down"); press(ch, true); }
+  });
+  document.addEventListener("keyup", (e) => {
+    const ch = e.key.length === 1 ? e.key.toUpperCase() : "";
+    if (ch && keyEls[ch]) { keyEls[ch].classList.remove("down"); release(); }
+  });
+
+  async function autoType(text) {
+    const token = ++playToken;
+    for (const ch of text) {
+      if (token !== playToken) return;
+      keyEls[ch].classList.add("down"); press(ch, true);
+      await new Promise((r) => setTimeout(r, 170));
+      keyEls[ch].classList.remove("down");
+      await new Promise((r) => setTimeout(r, 190));
+    }
+    release();
+  }
+
+  // presets
+  const presetRoot = $("presets");
+  PRESETS.forEach((p, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.dataset.index = i;
+    b.setAttribute("aria-pressed", "false");
+    const title = document.createElement("span"); title.textContent = `Preset ${i}`;
+    const sm = document.createElement("small"); sm.textContent = p.name;
+    b.append(title, sm); presetRoot.append(b);
+    b.addEventListener("click", () => {
+      playToken++;
+      ["l", "m", "r"].forEach((s, k) => { $("rot-" + s).value = p.rotors[k]; $("ring-" + s).value = p.rings[k]; $("start-" + s).value = "A"; });
+      $("refl").value = p.reflector; $("plugs").value = p.plugs;
+      presetRoot.querySelectorAll(".btn").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+      rebuild(true);
+    });
+  });
+  const unpress = () => presetRoot.querySelectorAll(".btn").forEach((x) => x.setAttribute("aria-pressed", "false"));
+  for (const id of ["rot-l", "rot-m", "rot-r", "ring-l", "ring-m", "ring-r", "start-l", "start-m", "start-r", "refl"]) $(id).addEventListener("change", () => { playToken++; unpress(); rebuild(true); });
+  $("plugs").addEventListener("input", () => { playToken++; unpress(); rebuild(true); });
+
+  $("btn-new").addEventListener("click", () => { playToken++; rebuild(true); });
+  $("btn-hello").addEventListener("click", () => { rebuild(true); if (valid) autoType("HELLOWORLD"); });
+  $("btn-decrypt").addEventListener("click", () => {
+    const text = cipherTape;
+    if (!text) { $("msg").textContent = "Type something first, then decrypt it."; return; }
+    rebuild(true); if (valid) autoType(text);
+  });
+  $("btn-copy").addEventListener("click", async () => {
+    const btn = $("btn-copy");
+    try { await navigator.clipboard.writeText(cipherTape); btn.textContent = "Copied"; }
+    catch (e) { btn.textContent = "Select the text and copy"; }
+    setTimeout(() => { btn.textContent = "Copy output"; }, 1500);
+  });
+
+  // start state: preset 0, one example already on the tape so the page is complete at rest
+  presetRoot.querySelector(".btn").click();
+  for (const ch of "ENIGMA") press(ch, true);
+  clearLamps();
+  runSelfCheck();
+})();
+</script>

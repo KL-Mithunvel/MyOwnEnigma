@@ -3,13 +3,13 @@
 Legend: 🔴 bug | 🟡 incomplete | 🟢 not started | ✅ done. Plan details: `docs/PLAN.md`.
 
 ## In Progress
-- [ ] Phase 6 — showcase artifact (interactive simulator + project story)
+- [ ] Phase 7 — hardware verification by the owner (keyboard + lamp board), follow `docs/BRINGUP.md`
 
 ## Not Started
-- [ ] Phase 7 — hardware verification by the owner (keyboard + lamp board)
 - [ ] Backlog: Morse output, UART to PC, keyboard-entered plugboard/rotor settings, 7-segment window, M4
 
 ## Done
+- [x] Phase 6 — showcase artifact published (private): https://claude.ai/artifact/GVLsJr9zbRmiKx9r9xESwr — built by `tools/build_showcase.py` from `showcase/template.html`; share from the page's Share menu
 - [x] Phase 5 — bring-up kit: `docs/BRINGUP.md` (stages S0–S10, troubleshooting, results table), `tools/vivado_build.tcl`, `tools/bringup_expected.py`, lamp self-test (hold btn[1..3]), `ck_io4` mux enable driven low, schematic facts recorded
 - [x] Phase 4 — quality gates: mutation check (18/18), Yosys synthesis gate (7,190 → 422 LUTs after sharing the rotor unit and using ROM-style tables), two-phase rotor stage for timing margin, pytest suite (config vs legacy test.v, XDC vs top ports, generated-file sync, vector coverage, static RTL rules)
 - [x] Phase 3 — `enigma_top` (presets, setup mode, window display on lamps, reload, status LEDs), `constraints/arty_s7_enigma.xdc`, full-system testbench (963 checks)

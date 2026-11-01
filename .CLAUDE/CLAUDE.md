@@ -52,8 +52,8 @@ python tools/run_sim.py --all                              # generate vectors, c
 | `rtl/enigma_math.vh` | Hand-written mod-26 helpers and the offset rotor pass | done |
 | `rtl/plugboard.v` | Pairs → 26-entry swap map, error flag | done |
 | `rtl/enigma_core.v` | Stepping + signal path FSM (one stage per clock, 10 clocks/letter) | done |
-| `rtl/key_scanner.v` | 4067 column scan, settle, debounce, press/release | Phase 2 |
-| `rtl/lamp_driver.v` | Letter → 4067 code, min on-time, hold while key down | Phase 2 |
+| `rtl/key_scanner.v` | 4067 column scan, settle, debounce, press/release, rejects 2-key/unknown frames | done |
+| `rtl/lamp_driver.v` | Letter → 4067 code, registered outputs, min on-time, hold while key down | done |
 | `rtl/enigma_top.v` | Arty top: presets, setup mode, window display, status LEDs | Phase 3 |
 | `sim/tb_*.v` | Testbenches (directed + model-generated random vectors) | Phases 1–3 |
 | `test.v` | Original prototype — **do not edit**, historical record | legacy |

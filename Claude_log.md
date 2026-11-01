@@ -24,3 +24,12 @@
 - Result: `python tools/run_sim.py --all` -> PASS, 10,759 checks, 262 vectors (random machines, stepping edge cases, a 700-letter run, all rotors/reflectors, 0-10 plugs), `-Wall` clean.
 - Bug found and fixed in simulation: the plugboard used `always @*`, which never fires at time 0 when inputs do not change -> X outputs in iverilog. Rewritten as a function + continuous assign (safe in sim and synthesis).
 - Runner bug fixed: vvp prints a `$finish called` trailer after PASS; the runner now ignores it.
+
+## 2026-11-01 — Phase 2: keyboard scanner and lamp driver
+- `rtl/key_scanner.v`: column dwell (SCAN_TICKS) for mux settling, one sample per column, frame-based debounce
+  (DEBOUNCE_FRAMES), frames with two different keys or an unknown row pattern are ignored (no ghost letters), release on an empty frame.
+  Replaces the legacy design that sampled against a free-running counter with no settle time.
+- `rtl/lamp_driver.v`: registered mux-select outputs (no glitching lamps), minimum on-time so quick taps are visible, lit while held.
+- Testbenches: `tb_key_scanner` (behavioural diode-matrix model: all 26 keys, hold, release, short tap, rollover, junk pattern, key change, reset) and
+  `tb_lamp_driver` (expected codes hardcoded independently of the generated table). All pass; `run_sim.py --all` 3/3.
+- Mistake caught: `before` is a SystemVerilog reserved word (compile error); renamed.

@@ -16,3 +16,11 @@
   One of my own tests was weak (A→B unchanged by an AB plug) and was rewritten.
 - Wrote `docs/PLAN.md` (phases 0–7), `ENIGMA_SPEC.md`, `HARDWARE.md`.
 - Decision: one commit per phase, per the owner's instruction.
+
+## 2026-11-01 — Phase 1: Verilog core verified against the golden model
+- Added `tools/gen_tables.py` (rotor/reflector ROMs, key decode, lamp encode, presets -> `rtl/*.vh` from `config.yaml` + `enigma_ref.py`),
+  `rtl/enigma_math.vh`, `rtl/plugboard.v`, `rtl/enigma_core.v`, `tools/gen_vectors.py`, `sim/tb_enigma_core.v`, `tools/run_sim.py`.
+- Design: one shared datapath stage per clock (10 clocks/letter) instead of a 100 MHz-critical combinational chain -> easy timing on the Arty.
+- Result: `python tools/run_sim.py --all` -> PASS, 10,759 checks, 262 vectors (random machines, stepping edge cases, a 700-letter run, all rotors/reflectors, 0-10 plugs), `-Wall` clean.
+- Bug found and fixed in simulation: the plugboard used `always @*`, which never fires at time 0 when inputs do not change -> X outputs in iverilog. Rewritten as a function + continuous assign (safe in sim and synthesis).
+- Runner bug fixed: vvp prints a `$finish called` trailer after PASS; the runner now ignores it.

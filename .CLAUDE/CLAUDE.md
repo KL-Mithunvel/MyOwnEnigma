@@ -47,9 +47,11 @@ python tools/run_sim.py --all                              # generate vectors, c
 |------|------|--------|
 | `config.yaml` | Single source of every tunable (timing, key matrix, lamp codes, presets, sim) | done |
 | `tools/enigma_ref.py` | Golden model (Python) | done |
-| `tools/gen_tables.py` | Generates `rtl/enigma_params.vh`, `enigma_tables.vh`, `enigma_presets.vh` | Phase 1 |
-| `rtl/plugboard.v` | Pairs → 26-entry swap map, error flag | Phase 1 |
-| `rtl/enigma_core.v` | Stepping + signal path FSM (one stage per clock) | Phase 1 |
+| `tools/gen_tables.py` | Generates `rtl/enigma_params.vh`, `enigma_tables.vh`, `enigma_presets.vh` | done |
+| `tools/gen_vectors.py`, `tools/run_sim.py` | Model-generated vectors; one-command compile + run of all testbenches | done |
+| `rtl/enigma_math.vh` | Hand-written mod-26 helpers and the offset rotor pass | done |
+| `rtl/plugboard.v` | Pairs → 26-entry swap map, error flag | done |
+| `rtl/enigma_core.v` | Stepping + signal path FSM (one stage per clock, 10 clocks/letter) | done |
 | `rtl/key_scanner.v` | 4067 column scan, settle, debounce, press/release | Phase 2 |
 | `rtl/lamp_driver.v` | Letter → 4067 code, min on-time, hold while key down | Phase 2 |
 | `rtl/enigma_top.v` | Arty top: presets, setup mode, window display, status LEDs | Phase 3 |

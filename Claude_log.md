@@ -25,3 +25,11 @@
   static RTL rules (no `$`, no delays, no `initial`, no `always @*`, one module per file), and wrappers for the simulations and synthesis. 63+ tests pass.
 - Repeated tooling issue: multi-line strings with `
 ` inside bash heredocs got turned into real newlines; repaired with the Edit tool. Use Edit for multi-line text.
+
+## 2026-11-01 — Phase 5: bring-up kit for the real hardware
+- `docs/BRINGUP.md`: assumptions to confirm, Vivado build criteria (WNS >= 0, ~430-600 LUTs), bench stages S0-S10 with expected observations, troubleshooting table, results table to fill in.
+- `tools/vivado_build.tcl` (batch build, part xc7s50csga324-1, optional program) - **not run**: no Vivado on this machine. `tools/bringup_expected.py` prints the typing script and expected lamps per preset from the golden model.
+- RTL: added a lamp self-test (hold btn[1]+btn[2]+btn[3]: lamps sweep A..Z at 300 ms) so the lamp board can be tested with no keyboard; checked in `tb_enigma_top` and by a mutation.
+- RTL: `enigma_top` now drives `ck_io4` low. Evidence: the early keyboard experiment drove it low beside the mux select lines and the KiCad keyboard schematic has an `EN` net; the later working code
+  left it undriven. This is an *assumption* flagged in HARDWARE.md and BRINGUP.md; it is harmless if EN has a pull-down.
+- Read the KiCad schematics (labels/components only): one 4067 on the keyboard, four 10k resistors R1-R4 (probably row pull-downs), lamp board has 74AHC1G04 inverters. Recorded in `docs/HARDWARE.md`.

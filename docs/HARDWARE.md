@@ -41,12 +41,22 @@ legacy `test.v`.
 | led0_r/g/b | J15 G17 F15 | LVCMOS33 | RGB LED 0 |
 | led1_r/g/b | E15 F18 E14 | LVCMOS33 | RGB LED 1 |
 | ck_io0..3 | L13 N13 L16 R14 | LVCMOS33 | keyboard column select (out) |
+| ck_io4 | T14 | LVCMOS33 | keyboard mux enable, active low (out, driven low) — assumed, see below |
 | ck_io5..8 | R16 R17 V17 R15 | LVCMOS33 | keyboard rows (in) |
 | o_lb0..4 | U11 T11 R11 T13 T12 | LVCMOS33 | lamp mux code (Pmod JD / ck_io26-30) |
 | o_lb4N | V13 | LVCMOS33 | inverse of o_lb4 (Pmod JD / ck_io31) |
 
 Other config lines in the master XDC (kept in the new constraints file): `CONFIG_VOLTAGE 3.3`,
 `CFGBVS VCCO`, SPI x4 config at 50 MHz, `INTERNAL_VREF 0.675` for bank 34.
+
+## Facts read from the KiCad schematics (not measured)
+
+- Keyboard schematic: one CD74HC4067 (`U1`), 29 diodes, 30 switch footprints, nets `KS-A0..A3` (mux select),
+  `KS-I0..I3` (four row inputs), `EN` (mux enable), four 10 kΩ resistors R1–R4 (very likely row pull-downs).
+- `EN` is assumed to be `ck_io4`: the early `keyboard` experiment in `test.v` drove `ck_io4` low next to the
+  select lines. The later, working code left it undriven. `enigma_top` drives it low (enabled) to be safe.
+- Lamp schematic: 26 LEDs, CD74HC4067 muxes, two 74AHC1G04 inverters, nets `LB 0..3` and `LB A1`. The board
+  seems to invert the MSB itself, so `o_lb4N` may be redundant. It is harmless to drive both.
 
 ## User interface of `enigma_top` (only keyboard + lamp board + Arty needed)
 
@@ -55,7 +65,7 @@ Other config lines in the master XDC (kept in the new constraints file): `CONFIG
 | `sw[1:0]` | Machine preset 0–3 (`config.yaml → presets`): rotors, rings, reflector, plugboard. Change between letters. |
 | `sw[2]` | **Setup mode.** Typed letters shift into the start window (last 3 typed = left, middle, right) and echo on the lamps; nothing is encrypted. Switch off to load the window into the rotors. |
 | `btn[0]` | Reload the typed start window into the rotors (start a new message). |
-| `btn[1]` `btn[2]` `btn[3]` | Hold to show the left / middle / right rotor window letter on the lamp board (no display needed). |
+| `btn[1]` `btn[2]` `btn[3]` | Hold to show the left / middle / right rotor window letter on the lamp board (no display needed). **Hold all three together = lamp self-test**: lamps sweep A…Z, 300 ms each, no keyboard needed. |
 | Keyboard | Each press steps the rotors, encrypts, and lights the lamp while the key is held (minimum on-time applies). |
 | `led[0]` key held · `led[1]` setup · `led[2]` plug error · `led[3]` heartbeat (bitstream alive) | |
 | RGB0 | Preset colour: red / green / blue / white = preset 0 / 1 / 2 / 3 |

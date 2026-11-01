@@ -12,4 +12,5 @@ Index of project documents. Add a row whenever a document is added.
 | [../docs/PLAN.md](../docs/PLAN.md) | Phased build plan | Before starting a phase |
 | [../docs/ENIGMA_SPEC.md](../docs/ENIGMA_SPEC.md) | Algorithm, wiring tables, test vectors | Touching cipher logic |
 | [../docs/HARDWARE.md](../docs/HARDWARE.md) | Board, keyboard, lamp board, pin map | Touching I/O or constraints |
+| [../docs/BRINGUP.md](../docs/BRINGUP.md) | Hardware bring-up stages, Vivado build, troubleshooting, results table | On the bench (Phase 7) |
 | [../config.yaml](../config.yaml) | Every tunable; source for generated headers | Changing any parameter |

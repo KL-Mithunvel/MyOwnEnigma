@@ -37,6 +37,7 @@ set_property -dict { PACKAGE_PIN L13   IOSTANDARD LVCMOS33 } [get_ports { ck_io0
 set_property -dict { PACKAGE_PIN N13   IOSTANDARD LVCMOS33 } [get_ports { ck_io1 }];
 set_property -dict { PACKAGE_PIN L16   IOSTANDARD LVCMOS33 } [get_ports { ck_io2 }];
 set_property -dict { PACKAGE_PIN R14   IOSTANDARD LVCMOS33 } [get_ports { ck_io3 }];
+set_property -dict { PACKAGE_PIN T14   IOSTANDARD LVCMOS33 } [get_ports { ck_io4 }];   # 4067 enable, driven low
 set_property -dict { PACKAGE_PIN R16   IOSTANDARD LVCMOS33 } [get_ports { ck_io5 }];
 set_property -dict { PACKAGE_PIN R17   IOSTANDARD LVCMOS33 } [get_ports { ck_io6 }];
 set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports { ck_io7 }];
@@ -52,7 +53,7 @@ set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports { o_lb4N
 
 ## Asynchronous human/mux inputs are synchronised in RTL (2-flop); slow outputs are not timing-critical.
 set_false_path -from [get_ports { sw[*] btn[*] ck_io5 ck_io6 ck_io7 ck_io8 }]
-set_false_path -to   [get_ports { led[*] led0_* led1_* ck_io0 ck_io1 ck_io2 ck_io3 o_lb* }]
+set_false_path -to   [get_ports { led[*] led0_* led1_* ck_io0 ck_io1 ck_io2 ck_io3 ck_io4 o_lb* }]
 
 ## Configuration (unchanged from the Digilent master file)
 set_property BITSTREAM.CONFIG.CONFIGRATE 50 [current_design]

@@ -41,6 +41,7 @@ MUTATIONS = [
      "lb4N not inverted"),
     ("enigma_top.v", "{setup_pos[9:0], key_code}", "{key_code, setup_pos[14:5]}", "setup window shifts the wrong way"),
     ("enigma_top.v", ".load(setup_done | reload_rise)", ".load(setup_done)", "reload button disabled"),
+    ("enigma_top.v", "lt_letter + 5'd1", "lt_letter + 5'd2", "lamp self-test skips letters"),
     ("enigma_top.v", "b_left ? pos_out[14:10]", "b_left ? pos_out[4:0]", "left window button shows the wrong rotor"),
 ]
 FAST_FIRST = ["tb_lamp_driver", "tb_key_scanner", "tb_enigma_core", "tb_enigma_top"]

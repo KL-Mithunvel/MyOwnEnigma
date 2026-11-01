@@ -72,6 +72,7 @@ def build_params(cfg: dict) -> str:
         "CFG_LAMP_MIN_ON_TICKS": hz * t["lamp_min_on_ms"] // 1000,
         "CFG_BTN_DEBOUNCE_TICKS": hz * t["button_debounce_ms"] // 1000,
         "CFG_HEARTBEAT_TICKS": hz // (2 * t["heartbeat_hz"]),
+        "CFG_LAMP_TEST_TICKS": hz * t["lamp_test_ms"] // 1000,
         "CFG_LAMP_IDLE_CODE": f"5'd{cfg['lamp']['idle_code']}",
         "CFG_NUM_PRESETS": len(cfg["presets"]),
     }

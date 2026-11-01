@@ -15,6 +15,7 @@ module tb_enigma_top;
     localparam FRAME = SCAN * COLS;
     localparam MIN_ON = 200;
     localparam BTN_DEB = 20;
+    localparam LT_TICKS = 400;
 
     reg clk = 1'b0;
     always #5 clk = ~clk;
@@ -23,7 +24,7 @@ module tb_enigma_top;
     reg [3:0] btn = 4'b0000;
     wire [3:0] led;
     wire led0_r, led0_g, led0_b, led1_r, led1_g, led1_b;
-    wire ck_io0, ck_io1, ck_io2, ck_io3;
+    wire ck_io0, ck_io1, ck_io2, ck_io3, ck_io4;
     wire ck_io5, ck_io6, ck_io7, ck_io8;
     wire o_lb0, o_lb1, o_lb2, o_lb3, o_lb4, o_lb4N;
 
@@ -37,12 +38,12 @@ module tb_enigma_top;
 
     enigma_top #(
         .SCAN_TICKS(SCAN), .NUM_COLS(COLS), .DEBOUNCE_FRAMES(DEB),
-        .LAMP_MIN_ON_TICKS(MIN_ON), .BTN_DEBOUNCE_TICKS(BTN_DEB), .HEARTBEAT_TICKS(100)
+        .LAMP_MIN_ON_TICKS(MIN_ON), .BTN_DEBOUNCE_TICKS(BTN_DEB), .HEARTBEAT_TICKS(100), .LAMP_TEST_TICKS(LT_TICKS)
     ) dut (
         .CLK100MHZ(clk), .sw(sw), .btn(btn), .led(led),
         .led0_r(led0_r), .led0_g(led0_g), .led0_b(led0_b),
         .led1_r(led1_r), .led1_g(led1_g), .led1_b(led1_b),
-        .ck_io0(ck_io0), .ck_io1(ck_io1), .ck_io2(ck_io2), .ck_io3(ck_io3),
+        .ck_io0(ck_io0), .ck_io1(ck_io1), .ck_io2(ck_io2), .ck_io3(ck_io3), .ck_io4(ck_io4),
         .ck_io5(ck_io5), .ck_io6(ck_io6), .ck_io7(ck_io7), .ck_io8(ck_io8),
         .o_lb0(o_lb0), .o_lb1(o_lb1), .o_lb2(o_lb2), .o_lb3(o_lb3), .o_lb4(o_lb4), .o_lb4N(o_lb4N)
     );
@@ -135,6 +136,19 @@ module tb_enigma_top;
         check("power-up lamps dark", lit_letter(lamp_code), 31);
         check("ready (green) LED", led1_g, 1);
         check("no plug error", led[2], 0);
+        check("keyboard mux enable driven low", ck_io4, 0);
+
+        // Lamp self-test: all three window buttons held sweeps A, B, C, ... one letter per LT_TICKS.
+        btn[3:1] = 3'b111;
+        repeat (BTN_DEB + 100) @(posedge clk);
+        check("self-test letter A", lit_letter(lamp_code), 0);
+        repeat (LT_TICKS) @(posedge clk);
+        check("self-test letter B", lit_letter(lamp_code), 1);
+        repeat (LT_TICKS) @(posedge clk);
+        check("self-test letter C", lit_letter(lamp_code), 2);
+        btn[3:1] = 3'b000;
+        repeat (BTN_DEB + MIN_ON + 60) @(posedge clk);
+        check("self-test ends dark", lit_letter(lamp_code), 31);
 
         vec_count = 0;
         fd = $fopen(vec_path, "r");

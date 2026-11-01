@@ -30,3 +30,6 @@ Thumbs.db
 
 # Template library cloned for reference — not part of this project
 claude/
+
+# Vivado build output
+build/

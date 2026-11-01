@@ -1,0 +1,115 @@
+# config.yaml — every tunable for the Enigma project lives here (no hardcoded
+# parameters in code). tools/gen_tables.py reads this file and writes the Verilog
+# headers rtl/enigma_params.vh, rtl/enigma_tables.vh and rtl/enigma_presets.vh.
+# Edit here, re-run `python tools/gen_tables.py`, never edit the generated files.
+
+board:
+  name: Arty S7-50
+  clock_hz: 100000000          # CLK100MHZ
+
+# ---- timing (converted to clock ticks by the generator) ---------------------
+timing:
+  scan_dwell_us: 1000          # time each keyboard column stays selected before sampling
+  debounce_frames: 3           # full keyboard scans a key must be seen in before it counts
+  lamp_min_on_ms: 200          # a lamp stays lit at least this long, even for a quick tap
+  button_debounce_ms: 20       # board push-button / switch debounce
+  heartbeat_hz: 1              # led[3] blink rate, proves the bitstream is running
+
+# ---- keyboard matrix ---------------------------------------------------------
+# Value = 8 bits {col[3:0], rows[3:0]} where col is the value driven on
+# ck_io3..ck_io0 and rows is {ck_io5, ck_io6, ck_io7, ck_io8} read back.
+# Extracted from the working "keys -> lamp (A->A)" code in the legacy test.v.
+keyboard:
+  columns: 9                   # columns scanned: 0 .. columns-1  (README: 9x4 matrix)
+  keys:
+    A: "00010100"
+    B: "01010010"
+    C: "00110010"
+    D: "00110100"
+    E: "00101000"
+    F: "01000100"
+    G: "01010100"
+    H: "01100100"
+    I: "01111000"
+    J: "01110100"
+    K: "10000100"
+    L: "10000010"
+    M: "01110010"
+    N: "01100010"
+    O: "10001000"
+    P: "00000010"
+    Q: "00001000"
+    R: "00111000"
+    S: "00100100"
+    T: "01001000"
+    U: "01101000"
+    V: "01000010"
+    W: "00011000"
+    X: "00100010"
+    Y: "00010010"
+    Z: "01011000"
+
+# ---- lamp board ----------------------------------------------------------------
+# 5-bit code driven on o_lb4..o_lb0 (o_lb4N is its inverse, enables the 2nd 16-ch mux).
+# Letters A-M use mux 1 channels 0-12; N-Z use mux 2 channels 0-12 (code 16-28).
+lamp:
+  idle_code: 31                # selects an unused channel -> all lamps off
+  codes:
+    A: 0
+    B: 1
+    C: 2
+    D: 3
+    E: 4
+    F: 5
+    G: 6
+    H: 7
+    I: 8
+    J: 9
+    K: 10
+    L: 11
+    M: 12
+    N: 16
+    O: 17
+    P: 18
+    Q: 19
+    R: 20
+    S: 21
+    T: 22
+    U: 23
+    V: 24
+    W: 25
+    X: 26
+    Y: 27
+    Z: 28
+
+# ---- machine presets, chosen with sw[1:0] on the board --------------------------
+# rotors: left middle right; rings/start use letters; plugs: up to 10 pairs.
+presets:
+  - name: "Enigma I, I-II-III, no plugs"
+    rotors: [I, II, III]
+    rings: "AAA"
+    reflector: B
+    plugs: ""
+  - name: "Enigma I with plugboard"
+    rotors: [I, II, III]
+    rings: "AAA"
+    reflector: B
+    plugs: "AV BS CG DL FU HZ IN KM OW RX"
+  - name: "Rotors III-I-II, rings BCD"
+    rotors: [III, I, II]
+    rings: "BCD"
+    reflector: B
+    plugs: "AB CD EF"
+  - name: "Rotors IV-V-I, reflector C"
+    rotors: [IV, V, I]
+    rings: "AAA"
+    reflector: C
+    plugs: ""
+
+# ---- simulation ------------------------------------------------------------------
+sim:
+  seed: 2024
+  random_vectors: 200          # random machine settings checked against the reference model
+  max_message_len: 60
+  sim_scan_ticks: 40           # shortened keyboard dwell used only in simulation
+  sim_lamp_min_on_ticks: 200

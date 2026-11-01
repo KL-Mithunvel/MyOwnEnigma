@@ -5,6 +5,18 @@ ARTY S7 (FPGA) Based Enigma Machine Replica
 Author:
 Date: 12/11/24
 
+> ## Project status (updated 2026-11-01)
+> The 2024 report below describes the **design intent**. At submission only the keyboard → lamp interface
+> (`test.v`) was demonstrated; the cipher in `test.v` was not a true Enigma (no rotor stepping, no real reflector,
+> no plugboard). The project is being rebuilt as a verified design:
+> - `rtl/` — synthesizable Verilog Enigma I (rotors I–V, reflectors B/C, ring settings, double-stepping, 10-pair plugboard)
+> - `tools/enigma_ref.py` — Python golden model; the Verilog is simulated against it (Icarus Verilog)
+> - `docs/PLAN.md` — phased plan · `docs/ENIGMA_SPEC.md` — algorithm · `docs/HARDWARE.md` — pins, keyboard, lamp board
+> - Hardware verification on the real board is the final step (see `docs/PLAN.md`, Phase 7).
+>
+> Corrections to the report: the keyboard and lamp-board multiplexers are **CD74HC4067** (16-channel), not
+> CD74HC4067; the keyboard has 29 switches and the lamp board 26 LEDs.
+
 Abstract
 This project presents a modern replica of the Enigma machine, implemented using the Arty S7 FPGA board and programmed in Verilog. The primary objective is to recreate the cryptographic functions of the Enigma machine in hardware, capturing its historical significance while enhancing its accessibility and interactivity. By combining custom-built hardware components—such as a keyboard and LED-based light-up board—with the FPGA’s computational power, this project offers a hands-on experience with encryption fundamentals. 
 
@@ -77,7 +89,7 @@ The Arty S7 FPGA functions as the main computational unit, responsible for handl
 
 
 2. Keyboard Design
-The custom-designed keyboard uses a 9x4 matrix setup, resembling the Enigma’s key arrangement. Each key press is detected via multiplexers (74HC4051),  which scan the matrix for active rows and columns, identifying the pressed key. Each key press is detected via multiplexers (74HC4051), which scan the matrix for active columns, identifying the pressed key with respect to the high column.
+The custom-designed keyboard uses a 9x4 matrix setup, resembling the Enigma’s key arrangement. Each key press is detected via multiplexers (CD74HC4067),  which scan the matrix for active rows and columns, identifying the pressed key. Each key press is detected via multiplexers (CD74HC4067), which scan the matrix for active columns, identifying the pressed key with respect to the high column.
 •	Matrix Setup: Arranged in rows and columns with for each key, allowing for distinct electrical paths to the FPGA.
 •	Multiplexing: The multiplexer allows column-by-column scanning, reducing pin usage while detecting precise key presses.
 This design mimics the Enigma’s input system, where each key press initiates the encoding process, thus creating a unique encoded letter output each time.
@@ -122,6 +134,8 @@ Verilog programming s done in vivado.
 
  
 Results
+(Status note: as originally submitted, the demonstrated result was keyboard → FPGA → lamp mapping; full rotor stepping and plugboard are implemented in the rebuilt `rtl/` design — see the status box at the top.)
+
 The FPGA-based Enigma machine successfully replicates the cryptographic functions of its historical counterpart. The FPGA processes each input, steps the rotors, and displays the encoded letter via the light-up board. 
 Users experience real-time encryption as they interact with the machine, making the complexity of Enigma encryption accessible.
 

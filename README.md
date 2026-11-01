@@ -12,7 +12,8 @@ Date: 12/11/24
 > - `rtl/` — synthesizable Verilog Enigma I (rotors I–V, reflectors B/C, ring settings, double-stepping, 10-pair plugboard)
 > - `tools/enigma_ref.py` — Python golden model; the Verilog is simulated against it (Icarus Verilog)
 > - `docs/PLAN.md` — phased plan · `docs/ENIGMA_SPEC.md` — algorithm · `docs/HARDWARE.md` — pins, keyboard, lamp board
-> - Hardware verification on the real board is the final step (see `docs/PLAN.md`, Phase 7).
+> - Status: simulation and synthesis are done (433 LUTs on the XC7S50, 19/19 injected bugs caught, 65 tests). Bench bring-up on the real keyboard and lamp board is next: `docs/BRINGUP.md`.
+> - Quick start: `pip install -r requirements.txt`, then `python tools/run_sim.py --all`.
 >
 > Corrections to the report: the keyboard and lamp-board multiplexers are **CD74HC4067** (16-channel), not
 > CD74HC4067; the keyboard has 29 switches and the lamp board 26 LEDs.

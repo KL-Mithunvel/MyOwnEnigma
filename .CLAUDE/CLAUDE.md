@@ -61,6 +61,7 @@ python tools/synth_check.py                                # Yosys synthesis for
 | `rtl/lamp_driver.v` | Letter → 4067 code, registered outputs, min on-time, hold while key down | done |
 | `rtl/sync_debounce.v` | 2-FF synchroniser + debounce for switches/buttons | done |
 | `rtl/enigma_top.v` | Arty top: presets, setup mode, window display on the lamps, reload, status LEDs | done |
+| `showcase/template.html`, `tools/build_showcase.py` | Shareable page; the builder runs all gates and fills the numbers from their output | done |
 | `constraints/arty_s7_enigma.xdc` | Pin constraints (all 32 pins cross-checked against the Digilent master XDC) | done |
 | `sim/tb_*.v` | Testbenches (directed + model-generated random vectors) | Phases 1–3 |
 | `test.v` | Original prototype — **do not edit**, historical record | legacy |

@@ -33,3 +33,16 @@
 - RTL: `enigma_top` now drives `ck_io4` low. Evidence: the early keyboard experiment drove it low beside the mux select lines and the KiCad keyboard schematic has an `EN` net; the later working code
   left it undriven. This is an *assumption* flagged in HARDWARE.md and BRINGUP.md; it is harmless if EN has a pull-down.
 - Read the KiCad schematics (labels/components only): one 4067 on the keyboard, four 10k resistors R1-R4 (probably row pull-downs), lamp board has 74AHC1G04 inverters. Recorded in `docs/HARDWARE.md`.
+
+## 2026-11-01 — Phase 6: showcase artifact
+- Read the poster and slides for the story and photos (hardware photos cropped from the poster; no names or student IDs in the crops).
+- `showcase/template.html` + `tools/build_showcase.py` -> `showcase/index.html` (152 KB). The builder runs the real tools (run_sim, mutation_check, synth_check, pytest) and fills every
+  number from their output (12,031 checks, 19/19 mutations, 433 LUTs, 65 tests); self-check vectors come from the Python golden model; presets from `config.yaml`.
+  The one historical number (7,190 LUTs, first synthesis run) is a constant in the builder citing the Phase 4 entry above.
+- Page content: working Enigma simulator (QWERTZ keys, lampboard, rotor windows, plugboard validation, FPGA presets, live signal-path trace, decrypt-the-tape), architecture pipeline,
+  verification table, the 17x synthesis story, 2024 hardware photos, honest status (hardware test pending), credits.
+- Checks before publishing (no browser in this session): JS syntax check, the machine logic run in Node (7/7 vectors), and the whole page run in jsdom (17 smoke checks: builds, UI encrypts AAAAA->BDZGO,
+  keyboard path, validation, presets). Not checked: visual rendering at phone/desktop width and both themes - open the link and look.
+- Published as a private artifact: https://claude.ai/artifact/GVLsJr9zbRmiKx9r9xESwr. The owner decides who gets access (Share menu).
+- Credits on the page: the 2024 team names from the public poster, and a line saying the 2026 rebuild was developed with Claude Code. Edit `template.html` if either should change.
+- Process slip, fixed: the Phase 5 commit left out the `config.yaml` change (`timing.lamp_test_ms`) that `gen_tables.py` reads, so HEAD was inconsistent for one commit. Added in its own commit. Lesson: check `git status` is clean after every phase commit.

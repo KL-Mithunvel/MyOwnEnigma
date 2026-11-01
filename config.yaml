@@ -14,6 +14,7 @@ timing:
   lamp_min_on_ms: 200          # a lamp stays lit at least this long, even for a quick tap
   button_debounce_ms: 20       # board push-button / switch debounce
   heartbeat_hz: 1              # led[3] blink rate, proves the bitstream is running
+  lamp_test_ms: 300            # lamp self-test (hold btn[1]+btn[2]+btn[3]): time each letter is lit
 
 # ---- keyboard matrix ---------------------------------------------------------
 # Value = 8 bits {col[3:0], rows[3:0]} where col is the value driven on

@@ -11,22 +11,25 @@ module sync_debounce #(
     output reg  level = 1'b0,
     output wire rise
 );
+`include "enigma_util.vh"
+
     reg        s1 = 1'b0;
     reg        s2 = 1'b0;
     reg        prev = 1'b0;
-    reg [31:0] count = 32'd0;
+    localparam CNT_W = clog2(TICKS);
+    reg [CNT_W-1:0] count = {CNT_W{1'b0}};
 
     always @(posedge clk) begin
         s1   <= in;
         s2   <= s1;
         prev <= level;
         if (s2 == level) begin
-            count <= 32'd0;
+            count <= {CNT_W{1'b0}};
         end else if (count == TICKS - 1) begin
             level <= s2;
-            count <= 32'd0;
+            count <= {CNT_W{1'b0}};
         end else begin
-            count <= count + 32'd1;
+            count <= count + 1'b1;
         end
     end
 

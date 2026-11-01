@@ -26,6 +26,7 @@ module key_scanner #(
 );
 
 `include "enigma_tables.vh"
+`include "enigma_util.vh"
 
     // Two-flop synchroniser for the asynchronous row inputs.
     reg [3:0] rows_s1, rows_s2;
@@ -34,7 +35,8 @@ module key_scanner #(
         rows_s2 <= rows_s1;
     end
 
-    reg [31:0] tick;
+    localparam TICK_W = clog2(SCAN_TICKS) + 1;
+    reg [TICK_W-1:0] tick;
     reg [3:0]  col;
     reg        frame_found;     // a valid key has been seen in this frame
     reg        frame_multi;     // ambiguous: two keys, or an unknown row pattern
@@ -55,7 +57,7 @@ module key_scanner #(
     always @(posedge clk) begin
         key_valid <= 1'b0;
         if (rst) begin
-            tick        <= 32'd0;
+            tick        <= {TICK_W{1'b0}};
             col         <= 4'd0;
             col_sel     <= 4'd0;
             frame_found <= 1'b0;
@@ -66,9 +68,9 @@ module key_scanner #(
             key_down    <= 1'b0;
             key_code    <= 5'd31;
         end else if (!sample) begin
-            tick <= tick + 32'd1;
+            tick <= tick + 1'b1;
         end else begin
-            tick <= 32'd0;
+            tick <= {TICK_W{1'b0}};
 
             // Fold this column's sample into the frame.
             n_found = frame_found;

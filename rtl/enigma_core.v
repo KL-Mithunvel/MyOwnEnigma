@@ -4,10 +4,12 @@
 // double-stepping and a 10-pair plugboard.
 //
 // Operation: pulse `key_valid` with a letter code (0..25) while `busy` is low. The core steps
-// the rotors, then pushes the letter through one stage per clock:
+// the rotors, then pushes the letter through one stage at a time:
 //   PLUG_IN -> R fwd -> M fwd -> L fwd -> REFLECTOR -> L inv -> M inv -> R inv -> PLUG_OUT
-// and finally pulses `done` for one clock with the result on `lamp_code` (held until the next
-// letter). 10 clocks after the key, so 100 ns at 100 MHz.
+// Each rotor stage takes two clocks (add the rotor offset, then look up the wiring and remove the
+// offset), so the logic depth per clock stays small and 100 MHz timing is comfortable. A letter takes
+// 15 clocks (150 ns at 100 MHz). `done` pulses for one clock with the result on `lamp_code`
+// (held until the next letter).
 //
 // Configuration inputs are read live: change rotor/ring/reflector/plug settings only while
 // idle (between letters). `load` (idle only) copies `start_pos` into the rotor positions.
@@ -54,6 +56,7 @@ module enigma_core (
     localparam [3:0] S_PLUG_OUT = 4'd9;
 
     reg [3:0] state;
+    reg       phase;                 // rotor stages: 0 = add offset, 1 = wiring lookup + remove offset
     reg [4:0] sig;                   // the letter travelling through the machine
     reg [4:0] pos_l, pos_m, pos_r;   // rotor window positions
 
@@ -68,10 +71,10 @@ module enigma_core (
     wire [4:0] ring_m = ring_set[9:5];
     wire [4:0] ring_r = ring_set[4:0];
 
-    // ---- plugboard ----------------------------------------------------------------
-    wire [129:0] plug_map;
+    // ---- plugboard (same wiring in both directions) ------------------------------
+    wire [4:0] plug_sig;
     plugboard u_plugboard (
-        .en(plug_en), .a(plug_a), .b(plug_b), .map(plug_map), .error(plug_error)
+        .en(plug_en), .a(plug_a), .b(plug_b), .c(sig), .swapped(plug_sig), .error(plug_error)
     );
 
     // ---- stepping decision (double-step included) -----------------------------
@@ -80,10 +83,33 @@ module enigma_core (
 
     wire key_ok = key_valid && (key_code < 5'd26);
 
+    // ---- one shared rotor unit -----------------------------------------------------------
+    // The stages run one at a time, so a single unit serves all six rotor stages; the state selects
+    // which rotor's select/position/ring it sees and the direction.
+    //   shift = (pos - ring) mod 26 ; phase 0: sig <- sig + shift ; phase 1: sig <- wiring[sig] - shift
+    wire in_r = (state == S_R_FWD) || (state == S_R_INV);
+    wire in_m = (state == S_M_FWD) || (state == S_M_INV);
+    wire fwd  = (state == S_R_FWD) || (state == S_M_FWD) || (state == S_L_FWD);
+    wire [2:0] u_rsel  = in_r ? rsel_r : (in_m ? rsel_m : rsel_l);
+    wire [4:0] u_pos   = in_r ? pos_r  : (in_m ? pos_m  : pos_l);
+    wire [4:0] u_ring  = in_r ? ring_r : (in_m ? ring_m : ring_l);
+    wire [4:0] u_shift = sub26(u_pos, u_ring);
+    wire [4:0] u_entry = add26(sig, u_shift);
+    wire [4:0] u_wired = rotor_lookup(u_rsel, fwd, sig);
+    wire [4:0] u_exit  = sub26(u_wired, u_shift);
+
+    // The state that follows a rotor stage.
+    wire [3:0] after_rotor = (state == S_R_FWD) ? S_M_FWD :
+                             (state == S_M_FWD) ? S_L_FWD :
+                             (state == S_L_FWD) ? S_REFLECT :
+                             (state == S_L_INV) ? S_M_INV :
+                             (state == S_M_INV) ? S_R_INV : S_PLUG_OUT;
+
     always @(posedge clk) begin
         done <= 1'b0;
         if (rst) begin
             state <= S_IDLE;
+            phase <= 1'b0;
             sig   <= 5'd0;
             pos_l <= 5'd0;
             pos_m <= 5'd0;
@@ -92,13 +118,14 @@ module enigma_core (
         end else begin
             case (state)
                 S_IDLE: begin
+                    phase <= 1'b0;
                     if (load) begin
                         pos_l <= start_pos[14:10];
                         pos_m <= start_pos[9:5];
                         pos_r <= start_pos[4:0];
                     end else if (key_ok) begin
                         // Step first, then encrypt (the rotors move before the current flows).
-                        if (mid_at_notch)                  pos_l <= add26(pos_l, 5'd1);
+                        if (mid_at_notch)                   pos_l <= add26(pos_l, 5'd1);
                         if (mid_at_notch || right_at_notch) pos_m <= add26(pos_m, 5'd1);
                         pos_r <= add26(pos_r, 5'd1);
                         sig   <= key_code;
@@ -106,39 +133,25 @@ module enigma_core (
                     end
                 end
                 S_PLUG_IN: begin
-                    sig   <= plug_map[sig*5 +: 5];
+                    sig   <= plug_sig;
                     state <= S_R_FWD;
                 end
-                S_R_FWD: begin
-                    sig   <= rotor_pass(rsel_r, pos_r, ring_r, 1'b1, sig);
-                    state <= S_M_FWD;
-                end
-                S_M_FWD: begin
-                    sig   <= rotor_pass(rsel_m, pos_m, ring_m, 1'b1, sig);
-                    state <= S_L_FWD;
-                end
-                S_L_FWD: begin
-                    sig   <= rotor_pass(rsel_l, pos_l, ring_l, 1'b1, sig);
-                    state <= S_REFLECT;
+                S_R_FWD, S_M_FWD, S_L_FWD, S_L_INV, S_M_INV, S_R_INV: begin
+                    if (!phase) begin
+                        sig   <= u_entry;
+                        phase <= 1'b1;
+                    end else begin
+                        sig   <= u_exit;
+                        phase <= 1'b0;
+                        state <= after_rotor;
+                    end
                 end
                 S_REFLECT: begin
                     sig   <= reflect(reflector_sel, sig);
                     state <= S_L_INV;
                 end
-                S_L_INV: begin
-                    sig   <= rotor_pass(rsel_l, pos_l, ring_l, 1'b0, sig);
-                    state <= S_M_INV;
-                end
-                S_M_INV: begin
-                    sig   <= rotor_pass(rsel_m, pos_m, ring_m, 1'b0, sig);
-                    state <= S_R_INV;
-                end
-                S_R_INV: begin
-                    sig   <= rotor_pass(rsel_r, pos_r, ring_r, 1'b0, sig);
-                    state <= S_PLUG_OUT;
-                end
                 S_PLUG_OUT: begin
-                    lamp_code <= plug_map[sig*5 +: 5];
+                    lamp_code <= plug_sig;
                     done      <= 1'b1;
                     state     <= S_IDLE;
                 end

@@ -37,11 +37,14 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, **kwargs)
 
 
-def run_testbench(tb: Path, iverilog: str, vvp: str, vcd: bool) -> bool:
+def run_testbench(tb: Path, iverilog: str, vvp: str, vcd: bool, rtl_dir: Path | None = None,
+                  quiet: bool = False) -> bool:
+    """Compile and run one testbench. rtl_dir lets mutation_check.py point at a modified copy of rtl/."""
     name = tb.stem
-    out = BUILD / f"{name}.vvp"
-    rtl = sorted(str(p) for p in (ROOT / "rtl").glob("*.v"))
-    compile_cmd = [iverilog, "-g2012", "-Wall", "-I", "rtl", "-s", name, "-o", str(out), str(tb), *rtl]
+    rtl_dir = rtl_dir or ROOT / "rtl"
+    out = BUILD / f"{name}{'_mut' if quiet else ''}.vvp"
+    rtl = sorted(str(p) for p in rtl_dir.glob("*.v"))
+    compile_cmd = [iverilog, "-g2012", "-Wall", "-I", str(rtl_dir), "-s", name, "-o", str(out), str(tb), *rtl]
     result = run(compile_cmd)
     warnings = [line for line in (result.stdout + result.stderr).splitlines() if line.strip()]
     if result.returncode != 0:
@@ -60,6 +63,8 @@ def run_testbench(tb: Path, iverilog: str, vvp: str, vcd: bool) -> bool:
     lines = [line for line in text.splitlines() if line.strip() and "$finish called" not in line]
     passed = (result.returncode == 0 and bool(lines) and lines[-1].strip() == "PASS"
               and not any(line.strip().startswith(("FAIL", "MISMATCH")) for line in lines))
+    if quiet:
+        return passed
     print(f"[{'PASS' if passed else 'FAIL'}] {name}")
     if not passed or "-v" in sys.argv:
         print("\n".join("    " + line for line in lines[-25:]))

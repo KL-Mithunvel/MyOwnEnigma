@@ -24,22 +24,15 @@
         end
     endfunction
 
-    // One pass of a signal through a rotor.
-    //   shift = (pos - ring) mod 26 ; out = (wiring[(c + shift) mod 26] - shift) mod 26
+    // Rotor wiring lookup for one signal. `entry` is the contact AFTER the rotor offset was added.
     //   fwd = 1: entry -> exit wiring (right-to-left) ; fwd = 0: inverse wiring (left-to-right)
-    function [4:0] rotor_pass;
+    // A full rotor pass is: shift = (pos - ring) mod 26; out = (wiring[(c + shift) mod 26] - shift) mod 26.
+    // enigma_core does it in two clocks: add the shift, then rotor_lookup and subtract the shift.
+    function [4:0] rotor_lookup;
         input [2:0] rsel;
-        input [4:0] pos;
-        input [4:0] ring;
         input       fwd;
-        input [4:0] c;
-        reg [4:0] shift;
-        reg [4:0] entry;
-        reg [4:0] wired;
+        input [4:0] entry;
         begin
-            shift = sub26(pos, ring);
-            entry = add26(c, shift);
-            wired = fwd ? rotor_fwd(rsel, entry) : rotor_inv(rsel, entry);
-            rotor_pass = sub26(wired, shift);
+            rotor_lookup = fwd ? rotor_fwd(rsel, entry) : rotor_inv(rsel, entry);
         end
     endfunction

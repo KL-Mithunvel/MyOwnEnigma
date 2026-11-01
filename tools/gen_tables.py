@@ -39,19 +39,20 @@ def pack5(values: list[int]) -> int:
 
 
 def rom_function(name: str, selector_bits: int, tables: list[list[int]]) -> str:
-    """A function returning table[sel][idx]; table words are 26 x 5 = 130 bits."""
+    """A ROM function: name(sel, idx) = tables[sel][idx], written as a flat case so synthesis infers LUTs."""
+    width = selector_bits + 5
     lines = [
         f"    function [4:0] {name};",
         f"        input [{selector_bits - 1}:0] sel;",
         "        input [4:0] idx;",
-        "        reg [129:0] w;",
         "        begin",
-        "            case (sel)",
+        "            case ({sel, idx})",
     ]
     for sel, table in enumerate(tables):
-        lines.append(f"                {selector_bits}'d{sel}: w = 130'h{pack5(table):033x};")
-    lines.append(f"                default: w = 130'h{pack5(tables[0]):033x};  // out-of-range select -> first entry")
-    lines += ["            endcase", f"            {name} = w[idx*5 +: 5];", "        end", "    endfunction", ""]
+        for idx, value in enumerate(table):
+            lines.append(f"                {width}'d{sel * 32 + idx}: {name} = 5'd{value};")
+    lines += [f"                default: {name} = 5'd0;  // unused select/contact", "            endcase", "        end",
+              "    endfunction", ""]
     return "\n".join(lines)
 
 

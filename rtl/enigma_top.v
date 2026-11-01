@@ -37,6 +37,7 @@ module enigma_top #(
 
 `include "enigma_tables.vh"
 `include "enigma_presets.vh"
+`include "enigma_util.vh"
 
     wire clk = CLK100MHZ;
 
@@ -117,14 +118,15 @@ module enigma_top #(
     assign o_lb4N = lb4N;
 
     // ---- status ---------------------------------------------------------------------------
-    reg [31:0] hb_count = 32'd0;
+    localparam HB_W = clog2(HEARTBEAT_TICKS);
+    reg [HB_W-1:0] hb_count = {HB_W{1'b0}};
     reg        heartbeat = 1'b0;
     always @(posedge clk) begin
         if (hb_count == HEARTBEAT_TICKS - 1) begin
-            hb_count  <= 32'd0;
+            hb_count  <= {HB_W{1'b0}};
             heartbeat <= ~heartbeat;
         end else begin
-            hb_count <= hb_count + 32'd1;
+            hb_count <= hb_count + 1'b1;
         end
     end
 

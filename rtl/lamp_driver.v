@@ -20,18 +20,20 @@ module lamp_driver #(
 );
 
 `include "enigma_tables.vh"
+`include "enigma_util.vh"
 
     localparam [4:0] IDLE = `CFG_LAMP_IDLE_CODE;   // selects an unused mux channel = all lamps off
 
     reg        lit;
     reg [4:0]  code;
-    reg [31:0] on_count;
+    localparam CNT_W = clog2(MIN_ON_TICKS + 1);
+    reg [CNT_W-1:0] on_count;
 
     always @(posedge clk) begin
         if (rst) begin
             lit      <= 1'b0;
             code     <= IDLE;
-            on_count <= 32'd0;
+            on_count <= {CNT_W{1'b0}};
             lb       <= IDLE;
             lb4N     <= ~IDLE[4];
         end else begin
@@ -39,8 +41,8 @@ module lamp_driver #(
                 lit      <= 1'b1;
                 code     <= lamp_encode(letter);
                 on_count <= MIN_ON_TICKS;
-            end else if (on_count != 32'd0) begin
-                on_count <= on_count - 32'd1;
+            end else if (on_count != {CNT_W{1'b0}}) begin
+                on_count <= on_count - 1'b1;
             end else if (!hold) begin
                 lit <= 1'b0;
             end

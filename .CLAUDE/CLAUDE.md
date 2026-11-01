@@ -36,6 +36,8 @@ export PATH="$PATH:/c/iverilog/bin"
 python -m pytest tests -q                                  # reference model (+ RTL tests when present)
 python tools/gen_tables.py                                 # regenerate rtl/*.vh from config.yaml
 python tools/run_sim.py --all                              # generate vectors, compile, run all testbenches
+python tools/mutation_check.py                             # inject 18 bugs; every one must be caught by a testbench
+python tools/synth_check.py                                # Yosys synthesis for Xilinx 7-series: no latches/warnings, resource use
 
 # hardware (owner, later) — see docs/BRINGUP.md
 # Vivado: add rtl/*.v, rtl/*.vh (Verilog Header), constraints/arty_s7_enigma.xdc; top = enigma_top
@@ -51,7 +53,10 @@ python tools/run_sim.py --all                              # generate vectors, c
 | `tools/gen_vectors.py`, `tools/run_sim.py` | Model-generated vectors; one-command compile + run of all testbenches | done |
 | `rtl/enigma_math.vh` | Hand-written mod-26 helpers and the offset rotor pass | done |
 | `rtl/plugboard.v` | Pairs → 26-entry swap map, error flag | done |
-| `rtl/enigma_core.v` | Stepping + signal path FSM (one stage per clock, 10 clocks/letter) | done |
+| `rtl/enigma_core.v` | Stepping + signal path FSM, one shared rotor unit, 2 clocks per rotor stage, 15 clocks/letter (150 ns) | done |
+| `rtl/enigma_util.vh` | `clog2` helper so counters are only as wide as they need to be | done |
+| `tools/mutation_check.py` | Mutation testing of the testbenches (18 injected bugs) | done |
+| `tools/synth_check.py` | Yosys synthesis gate (latches, warnings, resource budget) | done |
 | `rtl/key_scanner.v` | 4067 column scan, settle, debounce, press/release, rejects 2-key/unknown frames | done |
 | `rtl/lamp_driver.v` | Letter → 4067 code, registered outputs, min on-time, hold while key down | done |
 | `rtl/sync_debounce.v` | 2-FF synchroniser + debounce for switches/buttons | done |
@@ -69,7 +74,7 @@ Data flow:
 ```
 
 Concurrency: single 100 MHz clock domain, no CDC besides 2-FF synchronizers on switches, buttons and
-keyboard rows. The core takes 11 clocks per letter; the scanner cannot deliver keys that fast.
+keyboard rows. The core takes 15 clocks per letter; the scanner cannot deliver keys that fast.
 
 ## Key Conventions
 
@@ -79,6 +84,20 @@ keyboard rows. The core takes 11 clocks per letter; the scanner cannot deliver k
 - Config (rotors, rings, plugs) is read live — change it only between letters.
 - Generated files (`rtl/enigma_*.vh`) are never edited by hand; edit `config.yaml` or `enigma_ref.py`.
 - Hardware multiplexers are **CD74HC4067** (16-ch). Avoid `sw[3]` as an input (SSTL135, 1.35 V bank).
+
+## Verification status (simulation, 2026-11-01)
+
+| Gate | Result |
+|------|--------|
+| Golden model vs published Enigma vectors | pass |
+| `tb_enigma_core`: directed + 262 model vectors | 10,759 checks, 0 errors |
+| `tb_key_scanner` / `tb_lamp_driver` | 166 / 138 checks, 0 errors |
+| `tb_enigma_top`: keyboard model → lamps, 4 presets, setup mode, window display, reload | 963 checks, 0 errors |
+| Mutation check | 18/18 injected bugs caught |
+| Yosys synthesis (xc7) | 422 LUTs (1.3% of XC7S50), 341 FFs, 0 BRAM/DSP, no latches, no warnings |
+| pytest | config/legacy/XDC cross-checks, vector coverage, static RTL rules, simulation, synthesis |
+
+Not yet verified: Vivado timing/implementation and the real keyboard + lamp board (Phase 7).
 
 ## Data Files
 

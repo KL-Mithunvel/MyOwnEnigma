@@ -89,19 +89,19 @@ Use `python tools/bringup_expected.py` for the expected letters of each preset.
 
 ## 4. Results (fill in on the bench)
 
-**Overall (2026-11-02):** the owner tested the build on the real Arty S7 with the keyboard and lamp board and reported that it works. Per-stage dates, the Vivado WNS and LUT count, and any notes have not been recorded yet; fill in the table below.
+**Overall (2026-11-02):** the owner tested the build on the real Arty S7 with the keyboard and lamp board and reported that it works. The stage rows below are marked pass on that basis, not from individual logs. The Vivado WNS and LUT count have not been recorded yet.
 
 | Stage | Date | Pass / fail | Notes |
 |-------|------|-------------|-------|
-| Vivado build (WNS, LUTs) | | | |
-| S0 | | | |
-| S1 | | | |
-| S2 | | | |
-| S3 | | | |
-| S4 | | | |
-| S5 | | | |
-| S6 | | | |
-| S7 | | | |
-| S8 | | | |
-| S9 | | | |
-| S10 | | | |
+| Vivado build (WNS, LUTs) | 2026-11-02 | built and ran | WNS and LUT count not recorded; add from the Vivado report |
+| S0 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S1 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S2 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S3 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S4 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S5 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S6 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S7 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S8 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S9 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |
+| S10 | 2026-11-02 | pass | owner reported the full test worked; stage not logged individually |

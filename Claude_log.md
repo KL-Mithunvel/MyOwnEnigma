@@ -46,3 +46,8 @@
 - Published as a private artifact: https://claude.ai/artifact/GVLsJr9zbRmiKx9r9xESwr. The owner decides who gets access (Share menu).
 - Credits on the page: the 2024 team names from the public poster, and a line saying the 2026 rebuild was developed with Claude Code. Edit `template.html` if either should change.
 - Process slip, fixed: the Phase 5 commit left out the `config.yaml` change (`timing.lamp_test_ms`) that `gen_tables.py` reads, so HEAD was inconsistent for one commit. Added in its own commit. Lesson: check `git status` is clean after every phase commit.
+
+## 2026-11-02 - Hardware result, CAD images, FPGA internals
+- Owner bench-tested the build on the real Arty S7 with keyboard and lamp board: works. No per-stage numbers given yet.
+- Showcase: added the keyboard-case CAD views (cad/enigma-keyboard), an "Inside the FPGA" walk-through and a "How the Verilog is written" section; hero and status now say it works on hardware.
+- Open: owner will supply hardware photos and schematic images (no kicad-cli here to export the KiCad files).

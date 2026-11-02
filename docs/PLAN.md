@@ -4,8 +4,8 @@ Goal: turn the half-built 2024 student prototype into a **correct, verified, har
 Verilog Enigma (3 rotors + plugboard), then a shareable showcase for hiring managers,
 admissions committees and friends.
 
-**Status (2026-11-01):** Phases 0 to 6 are done and committed, one commit per phase. Phase 7 (hardware)
-is the owner's next step. Phase 6 also published the showcase page (see `TODO.md` for the link).
+**Status (2026-11-02):** Phases 0 to 6 are done and committed, one commit per phase. Phase 7 (hardware):
+the owner bench-tested the build and reports it works. Phase 6 also published the showcase page (see `TODO.md` for the link).
 
 | Phase | Status | Result |
 |-------|--------|--------|
@@ -16,7 +16,7 @@ is the owner's next step. Phase 6 also published the showcase page (see `TODO.md
 | 4 Quality gates | done | 19/19 mutations caught, 433 LUTs, 65 tests |
 | 5 Bring-up kit | done | `docs/BRINGUP.md`, Vivado script, lamp self-test |
 | 6 Showcase artifact | done | published (private) |
-| 7 Hardware verification | **next, owner** | not run: no board during the build |
+| 7 Hardware verification | done (owner-reported) | works on the real board; stage table to be filled in |
 
 **Working rules for this plan**
 

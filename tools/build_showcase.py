@@ -32,6 +32,8 @@ FIRST_SYNTH_LUTS = 7190       # first Yosys run before optimisation, recorded in
 POSTER = ROOT / "ppts" / "enigma poster.png"
 # Crop boxes on the 2000 px wide poster: (left, top, right, bottom)
 CROPS = {"parts": (768, 578, 1307, 842), "keyboard": (55, 1160, 313, 1350), "lamps": (357, 1160, 642, 1350)}
+CAD_IMAGES = {"cad_iso": "isometric view.png", "cad_side": "side view.png",
+              "cad_section": "side cross section assembly.png"}
 
 
 def run(cmd: list[str]) -> str:
@@ -93,6 +95,12 @@ def embed_images() -> dict:
         crop = poster.crop(tuple(int(v * scale) for v in box))
         buffer = io.BytesIO()
         crop.save(buffer, "JPEG", quality=88, optimize=True)
+        out[f"img_{name}"] = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    for name, file in CAD_IMAGES.items():
+        img = Image.open(ROOT / "cad" / "enigma-keyboard" / file).convert("RGB")
+        img.thumbnail((900, 900))
+        buffer = io.BytesIO()
+        img.save(buffer, "JPEG", quality=85, optimize=True)
         out[f"img_{name}"] = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
     return out
 

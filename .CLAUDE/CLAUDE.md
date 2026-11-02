@@ -13,7 +13,7 @@ License: see `LICENSE`. Toolchain: Vivado 2024.1 (hardware), Icarus Verilog 12 +
 
 State: the original `test.v` proved keyboard → lamp I/O but was not a real Enigma (see Known Technical
 Debt). The rebuild in `rtl/` is verified against a Python golden model in simulation. **Hardware
-verification is pending** — the owner has the keyboard + lamp board and will test once the build is done.
+verification is done (owner-reported, 2026-11-02)**.
 
 ## Preflight Gates
 
@@ -98,7 +98,7 @@ keyboard rows. The core takes 15 clocks per letter; the scanner cannot deliver k
 | Yosys synthesis (xc7) | 433 LUTs (1.3% of XC7S50), 371 FFs, 0 BRAM/DSP, no latches, no warnings |
 | pytest | config/legacy/XDC cross-checks, vector coverage, static RTL rules, simulation, synthesis |
 
-Not yet verified: Vivado timing/implementation and the real keyboard + lamp board (Phase 7).
+Hardware (2026-11-02): the owner bench-tested it on the real keyboard + lamp board and reports it works. Not yet recorded: per-stage results and the Vivado timing report.
 
 ## Data Files
 

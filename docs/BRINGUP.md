@@ -89,6 +89,8 @@ Use `python tools/bringup_expected.py` for the expected letters of each preset.
 
 ## 4. Results (fill in on the bench)
 
+**Overall (2026-11-02):** the owner tested the build on the real Arty S7 with the keyboard and lamp board and reported that it works. Per-stage dates, the Vivado WNS and LUT count, and any notes have not been recorded yet; fill in the table below.
+
 | Stage | Date | Pass / fail | Notes |
 |-------|------|-------------|-------|
 | Vivado build (WNS, LUTs) | | | |

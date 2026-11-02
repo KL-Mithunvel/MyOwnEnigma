@@ -167,6 +167,12 @@
   /* photos */
   .photos { display: grid; gap: 12px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   @media (max-width: 720px) { .photos { grid-template-columns: minmax(0, 1fr); } }
+  .walk { margin: 14px 0; padding-left: 1.3rem; display: grid; gap: 8px; }
+  .walk li::marker { color: var(--ink-2); font-weight: 600; }
+  .subhead { margin: 26px 0 4px; font-size: 1.05rem; }
+  .cad { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 720px) { .cad { grid-template-columns: minmax(0, 1fr); } }
+  .cad img { background: #fff; }
   figure { margin: 0; display: grid; gap: 6px; }
   figure img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
   figcaption { font-size: 0.82rem; color: var(--ink-2); }
@@ -189,12 +195,12 @@
   <header class="hero">
     <p class="eyebrow">FPGA project · Verilog · Arty S7-50</p>
     <h1>A WWII Enigma, rebuilt in Verilog.</h1>
-    <p class="lead">Three rotors, a plugboard, a reflector and a lampboard, running on a Xilinx Spartan-7 FPGA. The design is checked in simulation against an independent model. Testing on the real keyboard and lampboard is the next step.</p>
+    <p class="lead">Three rotors, a plugboard, a reflector and a lampboard, running on a Xilinx Spartan-7 FPGA. The design is checked in simulation against an independent model, and it has been tested on the real keyboard and lampboard.</p>
     <div class="stats">
       <div class="stat"><b>{{luts}} LUTs</b><span>{{lut_pct}}% of the XC7S50 chip, no latches</span><small>python tools/synth_check.py</small></div>
       <div class="stat"><b>{{checks_total}} checks</b><span>4 testbenches in simulation, 0 errors</span><small>python tools/run_sim.py --all</small></div>
       <div class="stat"><b>{{mut_killed}} of {{mut_total}}</b><span>bugs injected on purpose, all caught</span><small>python tools/mutation_check.py</small></div>
-      <div class="stat pending"><b>Bench test next</b><span>hardware verification is not done yet</span><small>docs/BRINGUP.md, stages S0 to S10</small></div>
+      <div class="stat"><b>Works on hardware</b><span>tested on the real keyboard and lampboard</span><small>bench result reported by the owner, docs/BRINGUP.md</small></div>
     </div>
   </header>
 
@@ -295,6 +301,37 @@
     <p class="note" style="margin-top:10px">All results are from simulation on a development PC. The mutation check exists to show the testbenches can fail, not only pass.</p>
   </section>
 
+  <section id="inside" aria-labelledby="h-inside">
+    <h2 id="h-inside">Inside the FPGA</h2>
+    <p class="sub">After synthesis the design is a few hundred lookup tables (LUTs) and flip-flops wired together. Here is what those circuits do for one key press.</p>
+    <ol class="walk">
+      <li><b>Scan.</b> A counter in <code>key_scanner</code> steps the multiplexer column address. After a short settle time it samples the four row lines through synchronizers. A key counts only when the same single pattern shows in 3 scans in a row, and two keys at once are ignored.</li>
+      <li><b>Step.</b> The key code is latched into the core. The right rotor position register adds 1 modulo 26. The middle one also steps when the right rotor is at its notch or the middle rotor is at its own notch (the double-step), and the left one steps when the middle is at its notch.</li>
+      <li><b>Walk the signal.</b> One 5-bit register, <code>sig</code>, holds the letter. The state machine moves it through ten states: plugboard in, right, middle and left rotor forward, reflector, left, middle and right rotor back, plugboard out.</li>
+      <li><b>One rotor circuit, six uses.</b> Each rotor stage takes two clocks. First, <code>sig</code> gets the rotor offset added (position minus ring setting, modulo 26). Then the wiring ROM is read and the offset is subtracted again. The state decides which rotor, position and direction feed that one circuit.</li>
+      <li><b>Light the lamp.</b> After 15 clocks (150 ns) the core raises <code>done</code>. <code>lamp_driver</code> converts the letter to a 5-bit multiplexer code, registers it, and holds it while the key is down.</li>
+    </ol>
+    <div class="cols2">
+      <div class="card"><h3>What the wiring tables become</h3><p>A rotor wiring is a 26-entry table of 5-bit values. In the chip it becomes a small LUT ROM, so a rotor lookup is a few LUT delays, not a computation.</p></div>
+      <div class="card"><h3>What modulo 26 becomes</h3><p>There is no divider. <code>add26</code> adds, compares with 26 and subtracts 26 if needed. <code>sub26</code> does the same in reverse. Both are only a handful of LUTs.</p></div>
+      <div class="card"><h3>Where the state lives</h3><p>The flip-flops hold the state, the phase bit, <code>sig</code>, three rotor positions and the output lamp code. Everything between them is combinational logic that settles within one 10 ns clock.</p></div>
+      <div class="card"><h3>Why 15 clocks is fine</h3><p>A key press takes the scanner tens of milliseconds to confirm, so the cipher is idle almost all of the time. Trading speed for a smaller, easier-to-time circuit costs nothing here.</p></div>
+    </div>
+  </section>
+
+  <section id="style" aria-labelledby="h-style">
+    <h2 id="h-style">How the Verilog is written</h2>
+    <p class="sub">Plain synthesizable Verilog-2001, so the same files go through Icarus Verilog for simulation, Yosys for the resource check and Vivado for the board. There is no SystemVerilog and no vendor IP.</p>
+    <div class="cols2">
+      <div class="card"><h3>Behavioural FSM plus datapath</h3><p><code>enigma_core</code> is a clocked state machine around one shared rotor unit. The letter visits each stage in turn, so the design is small and the timing is easy to reason about.</p></div>
+      <div class="card"><h3>Combinational logic as functions</h3><p>Rotor lookups, the plugboard swap and the lamp code are written as functions with <code>assign</code>. <code>always @*</code> is banned by a test, because it started at X in simulation and hid a bug.</p></div>
+      <div class="card"><h3>Tables generated, not typed</h3><p>Rotor wirings, key patterns, lamp codes and presets are generated into <code>.vh</code> headers from <code>config.yaml</code> and the Python model. No parameter is hardcoded in the Verilog.</p></div>
+      <div class="card"><h3>Hardware-safe I/O</h3><p>Every input goes through a two-flip-flop synchronizer. The scanner waits for the multiplexer to settle and debounces, and the lamp driver registers its outputs so the board never sees glitches.</p></div>
+      <div class="card"><h3>Small, flat ROMs</h3><p>Wirings are flat <code>case</code> statements that map to LUT ROMs. Counters are sized with a <code>clog2</code> function instead of fixed 32 bits.</p></div>
+      <div class="card"><h3>One clock domain</h3><p>Everything runs on the 100 MHz board clock with synchronous logic only. The result has no latches.</p></div>
+    </div>
+  </section>
+
   <section id="synth" aria-labelledby="h-synth">
     <h2 id="h-synth">Synthesis found a 17× problem</h2>
     <p class="sub">The simulation passed from the first run, so it could not show this. Synthesizing for the Spartan-7 showed the first draft using {{luts_first}} LUTs, which is {{lut_first_pct}}% of the chip for a small design.</p>
@@ -320,6 +357,13 @@
       <figure><img alt="Lampboard with 26 green LEDs and letter labels" src="{{img_lamps}}"><figcaption>Lampboard, 26 LEDs on two multiplexers.</figcaption></figure>
     </div>
     <p class="note" style="margin-top:10px">Photos are from the 2024 team poster. The case designs are in Onshape and the schematics in KiCad.</p>
+    <h3 class="subhead">The keyboard case, designed in CAD</h3>
+    <p class="sub">The keyboard case was modelled in Onshape and 3D printed in separate parts that join in the middle. The top is tilted toward the user.</p>
+    <div class="cad">
+      <figure><img alt="Isometric CAD view of the keyboard case with key cut-outs, screw bosses and a black top frame" src="{{img_cad_iso}}"><figcaption>Isometric view: key cut-outs, screw bosses and the top frame.</figcaption></figure>
+      <figure><img alt="Side view of the keyboard case showing the sloped top and the base" src="{{img_cad_side}}"><figcaption>Side view: the top slopes toward the user.</figcaption></figure>
+      <figure><img alt="Cross-section of the assembled keyboard case showing the top frame on the lower shell with a cavity underneath" src="{{img_cad_section}}"><figcaption>Cross-section of the assembly: the top frame sits on the lower shell, with a cavity underneath.</figcaption></figure>
+    </div>
   </section>
 
   <section id="status" aria-labelledby="h-status">
@@ -327,7 +371,7 @@
     <div class="status">
       <div class="step done"><b>Done · 2024</b><p>Keyboard, lampboard and cases built. Each key lit its own lamp on the real board.</p></div>
       <div class="step done"><b>Done · 2026</b><p>Cipher rebuilt and verified in simulation. <strong>Synthesizes to {{luts}} LUTs</strong> for the Spartan-7. Pin constraints checked against Digilent's file.</p></div>
-      <div class="step next"><b>Next</b><p>Build in Vivado and read the timing report, then work through the bench stages with the real keyboard and lampboard. Results go into the guide's table.</p></div>
+      <div class="step done"><b>Done · bench test</b><p>Tested on the real Arty S7 with the keyboard and lampboard, and it works. The owner reported the result; the per-stage table in the bring-up guide is still being filled in.</p></div>
       <div class="step later"><b>Later</b><p>Morse-code output from the original poster, a serial link to a PC, and entering plugboard settings from the keyboard.</p></div>
     </div>
   </section>

@@ -5,7 +5,7 @@
 Nothing on the page is typed in by hand: this script runs the real tools and reads their output
 (testbench check counts, mutation result, synthesis resources, pytest count), generates the in-page
 self-check vectors from the Python golden model, takes the machine presets from config.yaml, and embeds
-photos cropped from the 2024 poster. Takes about a minute because it runs the whole verification flow.
+the hardware photos, schematics and CAD views. Takes about a minute because it runs the whole verification flow.
 The finished file is what gets published as an Artifact.
 """
 
@@ -29,9 +29,6 @@ import mutation_check  # noqa: E402
 
 DEVICE_LUTS = 32600           # XC7S50
 FIRST_SYNTH_LUTS = 7190       # first Yosys run before optimisation, recorded in Claude_log.md (Phase 4)
-POSTER = ROOT / "ppts" / "enigma poster.png"
-# Crop boxes on the 2000 px wide poster: (left, top, right, bottom)
-CROPS = {"parts": (768, 578, 1307, 842), "keyboard": (55, 1160, 313, 1350), "lamps": (357, 1160, 642, 1350)}
 CAD_IMAGES = {"cad_iso": "isometric view.png", "cad_side": "side view.png",
               "cad_section": "side cross section assembly.png"}
 HARDWARE_PHOTOS = {"hw_bench": "13-setup-overview-bench-wide.jpeg", "hw_keyboard": "21-keyboard-angle-1.jpeg",
@@ -92,14 +89,7 @@ def make_vectors(presets: list[dict]) -> list[dict]:
 
 
 def embed_images() -> dict:
-    poster = Image.open(POSTER).convert("RGB")
-    scale = poster.width / 2000
     out = {}
-    for name, box in CROPS.items():
-        crop = poster.crop(tuple(int(v * scale) for v in box))
-        buffer = io.BytesIO()
-        crop.save(buffer, "JPEG", quality=88, optimize=True)
-        out[f"img_{name}"] = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
     for name, file in CAD_IMAGES.items():
         img = Image.open(ROOT / "cad" / "enigma-keyboard" / file).convert("RGB")
         img.thumbnail((900, 900))

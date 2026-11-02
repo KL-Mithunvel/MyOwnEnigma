@@ -138,6 +138,30 @@
   .stage .tag.fpga { color: var(--accent); border-color: var(--accent); }
   .stage code { color: var(--ink); font-weight: 500; }
   .stage p { font-size: 0.9rem; color: var(--ink-2); }
+  .flow { margin-top: 14px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; gap: 8px; }
+  .fc-title { font-size: 0.9rem; color: var(--ink-2); }
+  .fc-title b { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
+  .fc-label { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); margin-top: 4px; }
+  .fc-row { display: flex; align-items: stretch; gap: 4px; }
+  .fc-back { flex-direction: row-reverse; justify-content: flex-start; }
+  .fc-arrow { align-self: center; color: var(--ink-2); font-size: 1rem; flex: 0 0 auto; }
+  .fc-box { flex: 1 1 0; min-width: 0; display: grid; gap: 2px; align-content: start; padding: 8px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 0.82rem; }
+  .fc-box b { font-weight: 600; color: var(--ink); }
+  .fc-box code { font-size: 0.68rem; color: var(--ink-2); overflow-wrap: anywhere; }
+  .fc-box span { font-size: 0.72rem; color: var(--ink-2); }
+  .fc-box.rot { border-left: 4px solid var(--accent); }
+  .fc-box.refl { border-color: var(--accent); background: var(--surface-2); }
+  .fc-box.io { border-style: dashed; }
+  .fc-turn { text-align: right; font-size: 0.8rem; color: var(--ink-2); }
+  .fc-detail { margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .fc-mini .fc-box { text-align: center; }
+  @media (max-width: 720px) {
+    .fc-row { flex-wrap: wrap; }
+    .fc-row .fc-box { flex: 1 1 calc(33% - 20px); }
+    .fc-back { flex-direction: row; }
+    .fc-back .fc-arrow { transform: scaleX(-1); }
+    .fc-mini { flex-wrap: wrap; }
+  }
   .path { margin-top: 12px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink-2); overflow-x: auto; white-space: nowrap; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
   .path b { color: var(--ink); font-weight: 500; }
 
@@ -165,8 +189,6 @@
   .card p { font-size: 0.92rem; color: var(--ink-2); }
 
   /* photos */
-  .photos { display: grid; gap: 12px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
-  @media (max-width: 720px) { .photos { grid-template-columns: minmax(0, 1fr); } }
   .walk { margin: 14px 0; padding-left: 1.3rem; display: grid; gap: 8px; }
   .walk li::marker { color: var(--ink-2); font-weight: 600; }
   .subhead { margin: 26px 0 4px; font-size: 1.05rem; }
@@ -199,7 +221,7 @@
   <header class="hero">
     <p class="eyebrow">FPGA project · Verilog · Arty S7-50</p>
     <h1>A WWII Enigma, rebuilt in Verilog.</h1>
-    <p class="lead">Three rotors, a plugboard, a reflector and a lampboard, running on a Xilinx Spartan-7 FPGA. The design is checked in simulation against an independent model, and it has been tested on the real keyboard and lampboard.</p>
+    <p class="lead">Started as a 2024 course project at VIT Chennai, and rebuilt since. Three rotors, a plugboard, a reflector and a lampboard, running on a Xilinx Spartan-7 FPGA. The design is checked in simulation against an independent model, and it has been tested on the real keyboard and lampboard.</p>
     <div class="stats">
       <div class="stat"><b>{{luts}} LUTs</b><span>{{lut_pct}}% of the XC7S50 chip, no latches</span><small>python tools/synth_check.py</small></div>
       <div class="stat"><b>{{checks_total}} checks</b><span>4 testbenches in simulation, 0 errors</span><small>python tools/run_sim.py --all</small></div>
@@ -266,7 +288,7 @@
 
   <section id="fpga" aria-labelledby="h-fpga">
     <h2 id="h-fpga">What runs on the FPGA</h2>
-    <p class="sub">The 2024 prototype lit a lamp for every key. The rebuild adds the cipher itself and splits the design into small modules, each with its own testbench.</p>
+    <p class="sub">The first prototype lit a lamp for every key. The rebuild adds the cipher itself and splits the design into small modules, each with its own testbench.</p>
     <div class="pipe">
       <div class="stage"><span class="tag">Hardware</span><h3>Keyboard</h3><p>29 keys in a diode matrix, read through one CD74HC4067 multiplexer.</p></div>
       <div class="stage"><span class="tag fpga">FPGA</span><h3><code>key_scanner</code></h3><p>Scans 9 columns, waits for the multiplexer to settle, debounces over 3 scans and ignores two-key presses.</p></div>
@@ -274,7 +296,19 @@
       <div class="stage"><span class="tag fpga">FPGA</span><h3><code>lamp_driver</code></h3><p>Turns the letter into a 5-bit multiplexer code. The lamp stays lit while the key is held.</p></div>
       <div class="stage"><span class="tag">Hardware</span><h3>Lampboard</h3><p>26 LEDs on two CD74HC4067 multiplexers.</p></div>
     </div>
-    <div class="path"><b>enigma_core</b>: plugboard → right rotor → middle rotor → left rotor → reflector → left → middle → right → plugboard. Each rotor stage takes two clocks (add the offset, then look up the wiring), so no clock chains more logic than the 100 MHz timing allows.</div>
+    <figure class="flow" aria-label="Flow chart of enigma_core: the letter goes through the plugboard, three rotors, the reflector, back through the three rotors and the plugboard to the lamp">
+      <div class="fc-title"><b>enigma_core</b>, one letter, 15 clocks (150 ns at 100 MHz)</div>
+      <div class="fc-label">Forward, right to left</div>
+      <div class="fc-row"><div class="fc-box io"><b>Key</b><code>from key_scanner</code><span>stepping happens here</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box "><b>Plugboard</b><code>S_PLUG_IN</code><span>1 clock</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box rot"><b>Right rotor</b><code>S_R_FWD</code><span>2 clocks</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box rot"><b>Middle rotor</b><code>S_M_FWD</code><span>2 clocks</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box rot"><b>Left rotor</b><code>S_L_FWD</code><span>2 clocks</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box refl"><b>Reflector</b><code>S_REFLECT</code><span>1 clock</span></div></div>
+      <div class="fc-turn" aria-hidden="true">↓ the reflector sends it back</div>
+      <div class="fc-label">Return, left to right</div>
+      <div class="fc-row fc-back"><div class="fc-box rot"><b>Left rotor</b><code>S_L_INV</code><span>2 clocks</span></div><span class="fc-arrow" aria-hidden="true">←</span><div class="fc-box rot"><b>Middle rotor</b><code>S_M_INV</code><span>2 clocks</span></div><span class="fc-arrow" aria-hidden="true">←</span><div class="fc-box rot"><b>Right rotor</b><code>S_R_INV</code><span>2 clocks</span></div><span class="fc-arrow" aria-hidden="true">←</span><div class="fc-box "><b>Plugboard</b><code>S_PLUG_OUT</code><span>1 clock</span></div><span class="fc-arrow" aria-hidden="true">←</span><div class="fc-box io"><b>Lamp</b><code>lamp_driver</code><span>15 clocks in total</span></div></div>
+      <div class="fc-detail">
+        <div class="fc-label">Inside one rotor stage (same circuit for all six)</div>
+        <div class="fc-row fc-mini"><div class="fc-box"><b>sig</b><span>letter register</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box rot"><b>+ offset</b><span>clock 1</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box rot"><b>wiring ROM</b><span>clock 2</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box rot"><b>− offset</b><span>clock 2</span></div><span class="fc-arrow" aria-hidden="true">→</span><div class="fc-box"><b>sig</b><span>next state</span></div></div>
+      </div>
+      <figcaption>Each rotor stage takes two clocks, so no clock chains more logic than the 100 MHz timing allows.</figcaption>
+    </figure>
     <div class="cols2">
       <div class="card"><h3>Controls on the Arty S7</h3><p><code>sw[1:0]</code> picks one of four machine presets. <code>sw[2]</code> is setup mode: type the start letters on the keyboard. <code>btn[1..3]</code> show the three rotor windows on the lampboard, so no display is needed.</p></div>
       <div class="card"><h3>Built for bring-up</h3><p>Hold all three buttons for a lamp self-test that sweeps A to Z without the keyboard. A bring-up guide lists eleven bench stages with the expected lamps for each.</p></div>
@@ -298,7 +332,7 @@
           <tr><td><code>tb_lamp_driver</code></td><td>Lamp codes written out independently of the generated table</td><td class="num">{{checks_lamps}} checks</td></tr>
           <tr><td><code>tb_enigma_top</code></td><td>Whole system: keyboard model to lamps, four presets, setup mode, window display, lamp self-test</td><td class="num">{{checks_top}} checks</td></tr>
           <tr><td>Mutation check</td><td>{{mut_total}} bugs injected into the Verilog, such as no double-step, a wrong notch, a lamp enable that is not inverted</td><td class="num">{{mut_killed}} of {{mut_total}} caught</td></tr>
-          <tr><td>pytest</td><td>Key matrix and lamp codes compared with the 2024 code that worked on the real keyboard, pin map compared with Digilent's file, generated files in sync, rules for synthesizable code</td><td class="num">{{pytest_passed}} passed</td></tr>
+          <tr><td>pytest</td><td>Key matrix and lamp codes compared with the original prototype code that worked on the real keyboard, pin map compared with Digilent's file, generated files in sync, rules for synthesizable code</td><td class="num">{{pytest_passed}} passed</td></tr>
         </tbody>
       </table>
     </div>
@@ -353,14 +387,9 @@
   </section>
 
   <section id="hardware" aria-labelledby="h-hw">
-    <h2 id="h-hw">The 2024 hardware</h2>
+    <h2 id="h-hw">The hardware</h2>
     <p class="sub">A team of four at VIT Chennai built the keyboard, the lampboard and the cases for a Mechatronics course. The prototype lit the right lamp for each key. The cipher in that code did not step the rotors or use a real reflector, so I rebuilt it.</p>
-    <div class="photos">
-      <figure><img alt="Arty S7 board, custom keyboard, breadboard and lampboard laid out on a table" src="{{img_parts}}"><figcaption>The parts: Arty S7, keyboard in its 3D-printed case, and the lampboard.</figcaption></figure>
-      <figure><img alt="Custom keyboard with the Enigma QWERTZ layout" src="{{img_keyboard}}"><figcaption>Keyboard in the Enigma layout, 29 switches.</figcaption></figure>
-      <figure><img alt="Lampboard with 26 green LEDs and letter labels" src="{{img_lamps}}"><figcaption>Lampboard, 26 LEDs on two multiplexers.</figcaption></figure>
-    </div>
-    <p class="note" style="margin-top:10px">The first three photos are from the 2024 team poster. The case designs are in Onshape and the schematics in KiCad.</p>
+    <p class="note" style="margin-top:10px">The case designs are in Onshape and the schematics in KiCad.</p>
     <h3 class="subhead">The built hardware</h3>
     <div class="gallery">
       <figure><img loading="lazy" alt="The whole setup on a desk: keyboard, Arty S7 board, breadboard and the lampboard with its green LEDs" src="{{img_hw_bench}}"><figcaption>The setup: keyboard, Arty S7, breadboard and lampboard.</figcaption></figure>
@@ -376,7 +405,7 @@
       <figure><img alt="KiCad schematic of the keyboard: a CD74HC4067 multiplexer selecting columns of switches with diodes, and four row lines each with a 10 kilohm resistor to ground" src="{{img_sch_keyboard}}"><figcaption><strong>Keyboard.</strong> The FPGA drives the four select lines and reads the four row lines. Each key has a diode, so two keys pressed together do not short the matrix, and a 10 kΩ resistor holds each row low.</figcaption></figure>
       <figure><img alt="KiCad schematic of the lampboard: two CD74HC4067 multiplexers, each driving a bank of LEDs to ground, with an inverter on the enable of the second" src="{{img_sch_lamps}}"><figcaption><strong>Lampboard.</strong> Four shared select lines pick one of 16 LEDs on each multiplexer. A fifth line enables the first multiplexer directly and the second through a 74AHC1G04 inverter, so only one lamp can be lit at a time.</figcaption></figure>
     </div>
-    <p class="note">Schematics are from the 2024 team slides. The KiCad files are in the <code>schematic</code> folder.</p>
+    <p class="note">Schematics are from the team slides. The KiCad files are in the <code>schematic</code> folder.</p>
     <h3 class="subhead">The keyboard case, designed in CAD</h3>
     <p class="sub">The keyboard case was modelled in Onshape and 3D printed in separate parts that join in the middle. The top is tilted toward the user.</p>
     <div class="cad">
@@ -389,17 +418,16 @@
   <section id="status" aria-labelledby="h-status">
     <h2 id="h-status">Where it stands</h2>
     <div class="status">
-      <div class="step done"><b>Done · 2024</b><p>Keyboard, lampboard and cases built. Each key lit its own lamp on the real board.</p></div>
-      <div class="step done"><b>Done · 2026</b><p>Cipher rebuilt and verified in simulation. <strong>Synthesizes to {{luts}} LUTs</strong> for the Spartan-7. Pin constraints checked against Digilent's file.</p></div>
+      <div class="step done"><b>Done · prototype</b><p>Keyboard, lampboard and cases built. Each key lit its own lamp on the real board.</p></div>
+      <div class="step done"><b>Done · rebuild</b><p>Cipher rebuilt and verified in simulation. <strong>Synthesizes to {{luts}} LUTs</strong> for the Spartan-7. Pin constraints checked against Digilent's file.</p></div>
       <div class="step done"><b>Done · bench test</b><p>Tested on the real Arty S7 with the keyboard and lampboard, and it works. The owner reported the result; the per-stage table in the bring-up guide is still being filled in.</p></div>
-      <div class="step later"><b>Later</b><p>Morse-code output from the original poster, a serial link to a PC, and entering plugboard settings from the keyboard.</p></div>
+      <div class="step later"><b>Later</b><p>Morse-code output from the original design, a serial link to a PC, and entering plugboard settings from the keyboard.</p></div>
     </div>
   </section>
 
   <footer>
     <div>
-      <p><strong>2024 prototype</strong>: Mithunvel KL, Kiran T, Madhumitha V, Josika P. Mechatronics and Automation, Vellore Institute of Technology, Chennai.</p>
-      <p><strong>2026 rebuild</strong>: Mithunvel KL, developed with Claude Code as an AI pair programmer. Every number above is produced by the commands shown, and the page is built from their output.</p>
+      <p><strong>Original prototype</strong>: Mithunvel KL, Kiran T, Madhumitha V, Josika P. Mechatronics and Automation, Vellore Institute of Technology, Chennai.</p>
     </div>
     <pre>python tools/run_sim.py --all      # testbenches
 python tools/mutation_check.py     # bugs injected on purpose

@@ -34,6 +34,10 @@ POSTER = ROOT / "ppts" / "enigma poster.png"
 CROPS = {"parts": (768, 578, 1307, 842), "keyboard": (55, 1160, 313, 1350), "lamps": (357, 1160, 642, 1350)}
 CAD_IMAGES = {"cad_iso": "isometric view.png", "cad_side": "side view.png",
               "cad_section": "side cross section assembly.png"}
+HARDWARE_PHOTOS = {"hw_bench": "13-setup-overview-bench-wide.jpeg", "hw_keyboard": "21-keyboard-angle-1.jpeg",
+                   "hw_lamps": "19-lampboard-top-down.jpeg", "hw_mux": "18-lampboard-mux-modules.jpeg",
+                   "hw_keycaps": "01-keycaps-morse-closeup-1.jpeg", "hw_case": "03-arty-case-top-view-1.jpeg"}
+SCHEMATICS = {"sch_keyboard": "keyboard_schematic.png", "sch_lamps": "lampboard_schematic.png"}  # from the 2024 slides
 
 
 def run(cmd: list[str]) -> str:
@@ -102,6 +106,15 @@ def embed_images() -> dict:
         buffer = io.BytesIO()
         img.save(buffer, "JPEG", quality=85, optimize=True)
         out[f"img_{name}"] = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    for name, file in HARDWARE_PHOTOS.items():
+        img = Image.open(ROOT / "images" / file).convert("RGB")
+        img.thumbnail((900, 900))
+        buffer = io.BytesIO()
+        img.save(buffer, "JPEG", quality=80, optimize=True)
+        out[f"img_{name}"] = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    for name, file in SCHEMATICS.items():
+        data = (ROOT / "docs" / "images" / file).read_bytes()
+        out[f"img_{name}"] = "data:image/png;base64," + base64.b64encode(data).decode("ascii")
     return out
 
 

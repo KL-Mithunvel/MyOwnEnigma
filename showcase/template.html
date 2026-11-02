@@ -172,7 +172,11 @@
   .subhead { margin: 26px 0 4px; font-size: 1.05rem; }
   .cad { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   @media (max-width: 720px) { .cad { grid-template-columns: minmax(0, 1fr); } }
-  .cad img { background: #fff; }
+  .gallery { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 720px) { .gallery { grid-template-columns: minmax(0, 1fr); } }
+  .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
+  .cad img, .schem img { background: #fff; }
+  .schem { margin-top: 12px; }
   figure { margin: 0; display: grid; gap: 6px; }
   figure img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
   figcaption { font-size: 0.82rem; color: var(--ink-2); }
@@ -356,7 +360,23 @@
       <figure><img alt="Custom keyboard with the Enigma QWERTZ layout" src="{{img_keyboard}}"><figcaption>Keyboard in the Enigma layout, 29 switches.</figcaption></figure>
       <figure><img alt="Lampboard with 26 green LEDs and letter labels" src="{{img_lamps}}"><figcaption>Lampboard, 26 LEDs on two multiplexers.</figcaption></figure>
     </div>
-    <p class="note" style="margin-top:10px">Photos are from the 2024 team poster. The case designs are in Onshape and the schematics in KiCad.</p>
+    <p class="note" style="margin-top:10px">The first three photos are from the 2024 team poster. The case designs are in Onshape and the schematics in KiCad.</p>
+    <h3 class="subhead">The built hardware</h3>
+    <div class="gallery">
+      <figure><img loading="lazy" alt="The whole setup on a desk: keyboard, Arty S7 board, breadboard and the lampboard with its green LEDs" src="{{img_hw_bench}}"><figcaption>The setup: keyboard, Arty S7, breadboard and lampboard.</figcaption></figure>
+      <figure><img loading="lazy" alt="The keyboard in its white 3D-printed case with cream keycaps" src="{{img_hw_keyboard}}"><figcaption>The keyboard in its printed case, decorated with bees.</figcaption></figure>
+      <figure><img loading="lazy" alt="Close-up of keycaps that carry Morse code marks next to each letter" src="{{img_hw_keycaps}}"><figcaption>The keycaps carry Morse-code marks, a nod to the Morse output on the to-do list.</figcaption></figure>
+      <figure><img loading="lazy" alt="Lampboard seen from above: two rows of green LEDs with hand-written letter labels and two blue multiplexer modules" src="{{img_hw_lamps}}"><figcaption>The lampboard: 26 green LEDs, labelled by hand.</figcaption></figure>
+      <figure><img loading="lazy" alt="Lampboard at an angle showing the two blue multiplexer modules plugged into sockets above the LED rows" src="{{img_hw_mux}}"><figcaption>The two multiplexer modules above the LED rows.</figcaption></figure>
+      <figure><img loading="lazy" alt="The 3D-printed white case top for the Arty S7 with cut-outs for the switches, buttons and headers" src="{{img_hw_case}}"><figcaption>The Arty S7 case top, with cut-outs for switches, buttons and headers.</figcaption></figure>
+    </div>
+    <h3 class="subhead">The circuits, drawn in KiCad</h3>
+    <p class="sub">Both boards are simple. The keyboard is a diode matrix read through one CD74HC4067 multiplexer, and the lampboard is two of the same multiplexers, one per bank of lamps.</p>
+    <div class="cols2 schem">
+      <figure><img alt="KiCad schematic of the keyboard: a CD74HC4067 multiplexer selecting columns of switches with diodes, and four row lines each with a 10 kilohm resistor to ground" src="{{img_sch_keyboard}}"><figcaption><strong>Keyboard.</strong> The FPGA drives the four select lines and reads the four row lines. Each key has a diode, so two keys pressed together do not short the matrix, and a 10 kΩ resistor holds each row low.</figcaption></figure>
+      <figure><img alt="KiCad schematic of the lampboard: two CD74HC4067 multiplexers, each driving a bank of LEDs to ground, with an inverter on the enable of the second" src="{{img_sch_lamps}}"><figcaption><strong>Lampboard.</strong> Four shared select lines pick one of 16 LEDs on each multiplexer. A fifth line enables the first multiplexer directly and the second through a 74AHC1G04 inverter, so only one lamp can be lit at a time.</figcaption></figure>
+    </div>
+    <p class="note">Schematics are from the 2024 team slides. The KiCad files are in the <code>schematic</code> folder.</p>
     <h3 class="subhead">The keyboard case, designed in CAD</h3>
     <p class="sub">The keyboard case was modelled in Onshape and 3D printed in separate parts that join in the middle. The top is tilted toward the user.</p>
     <div class="cad">

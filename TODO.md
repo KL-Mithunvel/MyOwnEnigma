@@ -4,7 +4,8 @@ Legend: 🔴 bug | 🟡 incomplete | 🟢 not started | ✅ done. Plan details: 
 
 ## In Progress
 - [x] Phase 7 — hardware bench test done by the owner (keyboard + lamp board): works (2026-11-02). Per-stage numbers and Vivado WNS not yet recorded in `docs/BRINGUP.md`
-- [ ] Add the owner's own hardware photos and KiCad schematic images to the showcase when supplied
+- [x] Hardware photos (`images/`), KiCad schematics (`docs/images/`, from the 2024 slides) and CAD views added to the showcase
+- [ ] Fill in per-stage bench results in `docs/BRINGUP.md`
 
 ## Not Started
 - [ ] Backlog: Morse output, UART to PC, keyboard-entered plugboard/rotor settings, 7-segment window, M4

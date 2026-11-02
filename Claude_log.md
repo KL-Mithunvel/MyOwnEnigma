@@ -51,3 +51,4 @@
 - Owner bench-tested the build on the real Arty S7 with keyboard and lamp board: works. No per-stage numbers given yet.
 - Showcase: added the keyboard-case CAD views (cad/enigma-keyboard), an "Inside the FPGA" walk-through and a "How the Verilog is written" section; hero and status now say it works on hardware.
 - Open: owner will supply hardware photos and schematic images (no kicad-cli here to export the KiCad files).
+- Added 24 owner hardware photos (renamed, `images/`), six embedded in the showcase; keyboard and lampboard schematics extracted from the 2024 slides (`docs/images/`) and shown on the page. Page is now about 1.7 MB.
